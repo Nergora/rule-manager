@@ -546,22 +546,22 @@ public class CampaignManagerTests
 
 ```bash
 # RuleEngine.Core
-dotnet add package Nergora.RuleEngine.Core --version 1.1.17
+dotnet add package Nergora.RuleEngine.Core --version 1.1.18
 
 # RuleEngine.Sqlite
-dotnet add package Nergora.RuleEngine.Sqlite --version 1.1.17
+dotnet add package Nergora.RuleEngine.Sqlite --version 1.1.18
 
 # CampaignEngine.Core
-dotnet add package Nergora.CampaignEngine.Core --version 1.1.17
+dotnet add package Nergora.CampaignEngine.Core --version 1.1.18
 ```
 
 ### Package Information
 
 | Package | Version | .NET Support | Download |
 |---------|---------|--------------|----------|
-| Nergora.RuleEngine.Core | 1.1.17 | 8.0, 9.0, 10.0 | [![NuGet](https://img.shields.io/nuget/v/Nergora.RuleEngine.Core.svg)](https://www.nuget.org/packages/Nergora.RuleEngine.Core/) |
-| Nergora.RuleEngine.Sqlite | 1.1.17 | 8.0, 9.0, 10.0 | [![NuGet](https://img.shields.io/nuget/v/Nergora.RuleEngine.Sqlite.svg)](https://www.nuget.org/packages/Nergora.RuleEngine.Sqlite/) |
-| Nergora.CampaignEngine.Core | 1.1.17 | 8.0, 9.0, 10.0 | [![NuGet](https://img.shields.io/nuget/v/Nergora.CampaignEngine.Core.svg)](https://www.nuget.org/packages/Nergora.CampaignEngine.Core/) |
+| Nergora.RuleEngine.Core | 1.1.18 | 8.0, 9.0, 10.0 | [![NuGet](https://img.shields.io/nuget/v/Nergora.RuleEngine.Core.svg)](https://www.nuget.org/packages/Nergora.RuleEngine.Core/) |
+| Nergora.RuleEngine.Sqlite | 1.1.18 | 8.0, 9.0, 10.0 | [![NuGet](https://img.shields.io/nuget/v/Nergora.RuleEngine.Sqlite.svg)](https://www.nuget.org/packages/Nergora.RuleEngine.Sqlite/) |
+| Nergora.CampaignEngine.Core | 1.1.18 | 8.0, 9.0, 10.0 | [![NuGet](https://img.shields.io/nuget/v/Nergora.CampaignEngine.Core.svg)](https://www.nuget.org/packages/Nergora.CampaignEngine.Core/) |
 
 ### Recent NuGet Updates
 
