@@ -10,8 +10,8 @@
     <Version>1.1.17</Version>
     <Authors>Emre Karahan</Authors>
     <Description>Core campaign engine with rule-based system for .NET 8/9/10</Description>
-    <PackageProjectUrl>https://github.com/Emrek-stack/Nergora-Rule-Manager</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/Emrek-stack/Nergora-Rule-Manager</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/Nergora/rule-manager</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Nergora/rule-manager</RepositoryUrl>
     <PackageTags>rule-engine;rules;expression;evaluation;roslyn;csharp</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
