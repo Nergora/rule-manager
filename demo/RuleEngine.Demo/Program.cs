@@ -281,12 +281,12 @@ public sealed class DemoRuleProvider : IRuleProvider
         _ruleId = ruleId;
     }
 
-    public Task<RuleDefinition?> GetRuleDefinitionAsync(object input)
+    public Task<RuleDefinition?> GetRuleDefinitionAsync(object input, CancellationToken cancellationToken = default)
     {
         return _ruleRepository.GetActiveVersionAsync(_ruleId);
     }
 
-    public async Task<bool> ValidateRuleAsync(RuleDefinition rule, object input)
+    public async Task<bool> ValidateRuleAsync(RuleDefinition rule, object input, CancellationToken cancellationToken = default)
     {
         var validation = await _evaluator.ValidateAsync(rule, input);
         return validation.IsValid;
@@ -297,23 +297,23 @@ public sealed class InMemoryRuleRepository : IRuleRepository
 {
     private readonly ConcurrentDictionary<string, RuleEntry> _rules = new ConcurrentDictionary<string, RuleEntry>();
 
-    public Task<RuleDefinition?> GetByIdAsync(string id)
+    public Task<RuleDefinition?> GetByIdAsync(string id, CancellationToken cancellationToken = default)
     {
         return Task.FromResult(_rules.TryGetValue(id, out var entry) ? entry.BuildActiveDefinition() : null);
     }
 
-    public Task<RuleDefinition?> GetActiveVersionAsync(string ruleId)
+    public Task<RuleDefinition?> GetActiveVersionAsync(string ruleId, CancellationToken cancellationToken = default)
     {
         return Task.FromResult(_rules.TryGetValue(ruleId, out var entry) ? entry.BuildActiveDefinition() : null);
     }
 
-    public Task<IEnumerable<RuleDefinition>> GetAllAsync()
+    public Task<IEnumerable<RuleDefinition>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         var values = _rules.Values.Select(entry => entry.BuildActiveDefinition());
         return Task.FromResult(values);
     }
 
-    public Task<RuleDefinition> CreateAsync(CreateRuleRequest request)
+    public Task<RuleDefinition> CreateAsync(CreateRuleRequest request, CancellationToken cancellationToken = default)
     {
         var ruleId = Guid.NewGuid().ToString("N");
         var now = DateTime.UtcNow;
@@ -336,7 +336,7 @@ public sealed class InMemoryRuleRepository : IRuleRepository
         return Task.FromResult(entry.BuildActiveDefinition());
     }
 
-    public Task<RuleDefinition> UpdateAsync(string id, UpdateRuleRequest request)
+    public Task<RuleDefinition> UpdateAsync(string id, UpdateRuleRequest request, CancellationToken cancellationToken = default)
     {
         if (!_rules.TryGetValue(id, out var entry))
             throw new ArgumentException("Rule not found.", nameof(id));
@@ -362,13 +362,13 @@ public sealed class InMemoryRuleRepository : IRuleRepository
         return Task.FromResult(entry.BuildActiveDefinition());
     }
 
-    public Task DeleteAsync(string id)
+    public Task DeleteAsync(string id, CancellationToken cancellationToken = default)
     {
         _rules.TryRemove(id, out _);
         return Task.CompletedTask;
     }
 
-    public Task<RuleDefinition> CreateVersionAsync(string ruleId, CreateVersionRequest request)
+    public Task<RuleDefinition> CreateVersionAsync(string ruleId, CreateVersionRequest request, CancellationToken cancellationToken = default)
     {
         if (!_rules.TryGetValue(ruleId, out var entry))
             throw new ArgumentException("Rule not found.", nameof(ruleId));
@@ -384,7 +384,7 @@ public sealed class InMemoryRuleRepository : IRuleRepository
         return Task.FromResult(entry.BuildActiveDefinition());
     }
 
-    public Task<RuleDefinition> ActivateVersionAsync(string ruleId, int version)
+    public Task<RuleDefinition> ActivateVersionAsync(string ruleId, int version, CancellationToken cancellationToken = default)
     {
         if (!_rules.TryGetValue(ruleId, out var entry))
             throw new ArgumentException("Rule not found.", nameof(ruleId));

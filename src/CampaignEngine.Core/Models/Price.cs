@@ -1,7 +1,8 @@
 using System.Diagnostics;
 using System.Globalization;
 using System.Text.RegularExpressions;
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace CampaignEngine.Core.Models;
 
@@ -72,14 +73,17 @@ public struct Price : IEquatable<Price>, IComparable<Price>
 
     public static Price Zero => new Price { Value = 0, _currency = string.Empty };
 
-    internal class PriceJsonConverter : JsonConverter
+    internal class PriceJsonConverter : JsonConverter<Price>
     {
-        public override bool CanConvert(Type objectType) => objectType == typeof(Price);
-        public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
+        public override Price Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            var priceStr = serializer.Deserialize<string>(reader);
-            return priceStr == null ? Zero : FromString(priceStr);
+            var priceStr = reader.GetString();
+            return string.IsNullOrEmpty(priceStr) ? Zero : FromString(priceStr);
         }
-        public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer) => writer.WriteValue(value?.ToString());
+
+        public override void Write(Utf8JsonWriter writer, Price value, JsonSerializerOptions options)
+        {
+            writer.WriteStringValue(value.ToString());
+        }
     }
 }

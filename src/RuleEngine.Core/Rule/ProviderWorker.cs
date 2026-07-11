@@ -83,7 +83,7 @@ public class ProviderWorker<TRuleSet, TInput, TOutput> : ProviderWorker
                 ) : default(DateTime);
 
             // Remove deleted rule sets.
-            var isExistDic = await _provider.IsExistsAsync(RuleSets.Keys.ToArray());
+            var isExistDic = await _provider.IsExistsAsync(default, RuleSets.Keys.ToArray());
             foreach (var deletedKey in isExistDic.Where(kv => !kv.Value).Select(kv => kv.Key))
             {
                 RuleSets.TryRemove(deletedKey, out _);

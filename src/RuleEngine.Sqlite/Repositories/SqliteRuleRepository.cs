@@ -1,3 +1,4 @@
+using System.Threading;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using RuleEngine.Core.Abstractions;
@@ -16,49 +17,52 @@ public class SqliteRuleRepository : IRuleRepository
 
     public SqliteRuleRepository(RuleDbContext context, ILogger<SqliteRuleRepository> logger)
     {
-        _context = context ?? throw new ArgumentNullException(nameof(context));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(logger);
+        
+        _context = context;
+        _logger = logger;
     }
 
     /// <inheritdoc />
-    public async Task<RuleDefinition?> GetByIdAsync(string id)
+    public async Task<RuleDefinition?> GetByIdAsync(string id, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("ID cannot be null or empty", nameof(id));
 
         var ruleEntity = await _context.Rules
-            .FirstOrDefaultAsync(r => r.Id == id);
+            .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
 
         if (ruleEntity == null)
             return null;
 
-        return await BuildRuleDefinitionAsync(ruleEntity);
+        return await BuildRuleDefinitionAsync(ruleEntity, cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<RuleDefinition?> GetActiveVersionAsync(string ruleId)
+    public async Task<RuleDefinition?> GetActiveVersionAsync(string ruleId, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(ruleId))
             throw new ArgumentException("Rule ID cannot be null or empty", nameof(ruleId));
 
         var ruleEntity = await _context.Rules
-            .FirstOrDefaultAsync(r => r.Id == ruleId);
+            .FirstOrDefaultAsync(r => r.Id == ruleId, cancellationToken);
 
         if (ruleEntity == null)
             return null;
 
-        return await BuildRuleDefinitionAsync(ruleEntity);
+        return await BuildRuleDefinitionAsync(ruleEntity, cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<RuleDefinition>> GetAllAsync()
+    public async Task<IEnumerable<RuleDefinition>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        var ruleEntities = await _context.Rules.ToListAsync();
+        var ruleEntities = await _context.Rules.ToListAsync(cancellationToken);
         var rules = new List<RuleDefinition>();
 
         foreach (var ruleEntity in ruleEntities)
         {
-            var rule = await BuildRuleDefinitionAsync(ruleEntity);
+            var rule = await BuildRuleDefinitionAsync(ruleEntity, cancellationToken);
             if (rule != null)
                 rules.Add(rule);
         }
@@ -67,10 +71,9 @@ public class SqliteRuleRepository : IRuleRepository
     }
 
     /// <inheritdoc />
-    public async Task<RuleDefinition> CreateAsync(CreateRuleRequest request)
+    public async Task<RuleDefinition> CreateAsync(CreateRuleRequest request, CancellationToken cancellationToken = default)
     {
-        if (request == null)
-            throw new ArgumentNullException(nameof(request));
+        ArgumentNullException.ThrowIfNull(request);
 
         var ruleId = Guid.NewGuid().ToString();
         var now = DateTime.UtcNow;
@@ -100,23 +103,22 @@ public class SqliteRuleRepository : IRuleRepository
             _context.RuleParameters.Add(parameterEntity);
         }
 
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Created rule {RuleId} with name {Name}", ruleId, request.Name);
 
-        return await BuildRuleDefinitionAsync(ruleEntity) ?? throw new InvalidOperationException("Failed to build rule definition after creation");
+        return await BuildRuleDefinitionAsync(ruleEntity, cancellationToken) ?? throw new InvalidOperationException("Failed to build rule definition after creation");
     }
 
     /// <inheritdoc />
-    public async Task<RuleDefinition> UpdateAsync(string id, UpdateRuleRequest request)
+    public async Task<RuleDefinition> UpdateAsync(string id, UpdateRuleRequest request, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("ID cannot be null or empty", nameof(id));
 
-        if (request == null)
-            throw new ArgumentNullException(nameof(request));
+        ArgumentNullException.ThrowIfNull(request);
 
-        var ruleEntity = await _context.Rules.FindAsync(id);
+        var ruleEntity = await _context.Rules.FindAsync(new object[] { id }, cancellationToken);
         if (ruleEntity == null)
             throw new ArgumentException($"Rule with ID '{id}' not found", nameof(id));
 
@@ -137,14 +139,14 @@ public class SqliteRuleRepository : IRuleRepository
         {
             // Deactivate current version
             var currentVersion = await _context.RuleVersions
-                .FirstOrDefaultAsync(v => v.RuleId == id && v.IsActive);
+                .FirstOrDefaultAsync(v => v.RuleId == id && v.IsActive, cancellationToken);
             if (currentVersion != null)
             {
                 currentVersion.IsActive = false;
             }
 
             // Create new version
-            var newVersionNumber = await GetNextVersionNumberAsync(id);
+            var newVersionNumber = await GetNextVersionNumberAsync(id, cancellationToken);
             var newVersion = RuleVersionEntity.FromDomainContent(id, newVersionNumber, request.Content);
             newVersion.IsActive = true;
             _context.RuleVersions.Add(newVersion);
@@ -156,7 +158,7 @@ public class SqliteRuleRepository : IRuleRepository
             // Remove existing parameters
             var existingParameters = await _context.RuleParameters
                 .Where(p => p.RuleId == id)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
             _context.RuleParameters.RemoveRange(existingParameters);
 
             // Add new parameters
@@ -167,39 +169,38 @@ public class SqliteRuleRepository : IRuleRepository
             }
         }
 
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Updated rule {RuleId}", id);
 
-        return await BuildRuleDefinitionAsync(ruleEntity) ?? throw new InvalidOperationException("Failed to build rule definition after update");
+        return await BuildRuleDefinitionAsync(ruleEntity, cancellationToken) ?? throw new InvalidOperationException("Failed to build rule definition after update");
     }
 
     /// <inheritdoc />
-    public async Task DeleteAsync(string id)
+    public async Task DeleteAsync(string id, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("ID cannot be null or empty", nameof(id));
 
-        var ruleEntity = await _context.Rules.FindAsync(id);
+        var ruleEntity = await _context.Rules.FindAsync(new object[] { id }, cancellationToken);
         if (ruleEntity == null)
             throw new ArgumentException($"Rule with ID '{id}' not found", nameof(id));
 
         _context.Rules.Remove(ruleEntity);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Deleted rule {RuleId}", id);
     }
 
     /// <inheritdoc />
-    public async Task<RuleDefinition> CreateVersionAsync(string ruleId, CreateVersionRequest request)
+    public async Task<RuleDefinition> CreateVersionAsync(string ruleId, CreateVersionRequest request, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(ruleId))
             throw new ArgumentException("Rule ID cannot be null or empty", nameof(ruleId));
 
-        if (request == null)
-            throw new ArgumentNullException(nameof(request));
+        ArgumentNullException.ThrowIfNull(request);
 
-        var ruleEntity = await _context.Rules.FindAsync(ruleId);
+        var ruleEntity = await _context.Rules.FindAsync(new object[] { ruleId }, cancellationToken);
         if (ruleEntity == null)
             throw new ArgumentException($"Rule with ID '{ruleId}' not found", nameof(ruleId));
 
@@ -207,7 +208,7 @@ public class SqliteRuleRepository : IRuleRepository
         if (request.Activate)
         {
             var currentVersion = await _context.RuleVersions
-                .FirstOrDefaultAsync(v => v.RuleId == ruleId && v.IsActive);
+                .FirstOrDefaultAsync(v => v.RuleId == ruleId && v.IsActive, cancellationToken);
             if (currentVersion != null)
             {
                 currentVersion.IsActive = false;
@@ -215,7 +216,7 @@ public class SqliteRuleRepository : IRuleRepository
         }
 
         // Create new version
-        var newVersionNumber = await GetNextVersionNumberAsync(ruleId);
+        var newVersionNumber = await GetNextVersionNumberAsync(ruleId, cancellationToken);
         var newVersion = RuleVersionEntity.FromDomainContent(ruleId, newVersionNumber, request.Content);
         newVersion.IsActive = request.Activate;
         _context.RuleVersions.Add(newVersion);
@@ -226,7 +227,7 @@ public class SqliteRuleRepository : IRuleRepository
             // Remove existing parameters
             var existingParameters = await _context.RuleParameters
                 .Where(p => p.RuleId == ruleId)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
             _context.RuleParameters.RemoveRange(existingParameters);
 
             // Add new parameters
@@ -238,26 +239,26 @@ public class SqliteRuleRepository : IRuleRepository
         }
 
         ruleEntity.UpdatedAt = DateTime.UtcNow;
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Created version {Version} for rule {RuleId}", newVersionNumber, ruleId);
 
-        return await BuildRuleDefinitionAsync(ruleEntity) ?? throw new InvalidOperationException("Failed to build rule definition after version creation");
+        return await BuildRuleDefinitionAsync(ruleEntity, cancellationToken) ?? throw new InvalidOperationException("Failed to build rule definition after version creation");
     }
 
     /// <inheritdoc />
-    public async Task<RuleDefinition> ActivateVersionAsync(string ruleId, int version)
+    public async Task<RuleDefinition> ActivateVersionAsync(string ruleId, int version, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(ruleId))
             throw new ArgumentException("Rule ID cannot be null or empty", nameof(ruleId));
 
-        var ruleEntity = await _context.Rules.FindAsync(ruleId);
+        var ruleEntity = await _context.Rules.FindAsync(new object[] { ruleId }, cancellationToken);
         if (ruleEntity == null)
             throw new ArgumentException($"Rule with ID '{ruleId}' not found", nameof(ruleId));
 
         // Deactivate current version
         var currentVersion = await _context.RuleVersions
-            .FirstOrDefaultAsync(v => v.RuleId == ruleId && v.IsActive);
+            .FirstOrDefaultAsync(v => v.RuleId == ruleId && v.IsActive, cancellationToken);
         if (currentVersion != null)
         {
             currentVersion.IsActive = false;
@@ -265,25 +266,25 @@ public class SqliteRuleRepository : IRuleRepository
 
         // Activate specified version
         var targetVersion = await _context.RuleVersions
-            .FirstOrDefaultAsync(v => v.RuleId == ruleId && v.Version == version);
+            .FirstOrDefaultAsync(v => v.RuleId == ruleId && v.Version == version, cancellationToken);
         if (targetVersion == null)
             throw new ArgumentException($"Version {version} not found for rule '{ruleId}'", nameof(version));
 
         targetVersion.IsActive = true;
         ruleEntity.UpdatedAt = DateTime.UtcNow;
 
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Activated version {Version} for rule {RuleId}", version, ruleId);
 
-        return await BuildRuleDefinitionAsync(ruleEntity) ?? throw new InvalidOperationException("Failed to build rule definition after version activation");
+        return await BuildRuleDefinitionAsync(ruleEntity, cancellationToken) ?? throw new InvalidOperationException("Failed to build rule definition after version activation");
     }
 
-    private async Task<RuleDefinition?> BuildRuleDefinitionAsync(RuleEntity ruleEntity)
+    private async Task<RuleDefinition?> BuildRuleDefinitionAsync(RuleEntity ruleEntity, CancellationToken cancellationToken)
     {
         // Get active version
         var activeVersion = await _context.RuleVersions
-            .FirstOrDefaultAsync(v => v.RuleId == ruleEntity.Id && v.IsActive);
+            .FirstOrDefaultAsync(v => v.RuleId == ruleEntity.Id && v.IsActive, cancellationToken);
 
         if (activeVersion == null)
             return null;
@@ -291,7 +292,7 @@ public class SqliteRuleRepository : IRuleRepository
         // Get parameters
         var parameters = await _context.RuleParameters
             .Where(p => p.RuleId == ruleEntity.Id)
-            .ToDictionaryAsync(p => p.Name, p => p.ToDomainParameter().Value);
+            .ToDictionaryAsync(p => p.Name, p => p.ToDomainParameter().Value, cancellationToken);
 
         var rule = ruleEntity.ToDomainModel();
         rule.Content = activeVersion.ToDomainContent();
@@ -301,11 +302,11 @@ public class SqliteRuleRepository : IRuleRepository
         return rule;
     }
 
-    private async Task<int> GetNextVersionNumberAsync(string ruleId)
+    private async Task<int> GetNextVersionNumberAsync(string ruleId, CancellationToken cancellationToken)
     {
         var maxVersion = await _context.RuleVersions
             .Where(v => v.RuleId == ruleId)
-            .MaxAsync(v => (int?)v.Version) ?? 0;
+            .MaxAsync(v => (int?)v.Version, cancellationToken) ?? 0;
 
         return maxVersion + 1;
     }

@@ -16,15 +16,17 @@ public class SqliteAuditRepository : IAuditRepository
 
     public SqliteAuditRepository(RuleDbContext context, ILogger<SqliteAuditRepository> logger)
     {
-        _context = context ?? throw new ArgumentNullException(nameof(context));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(logger);
+        
+        _context = context;
+        _logger = logger;
     }
 
     /// <inheritdoc />
     public async Task LogExecutionAsync(RuleExecutionAudit audit)
     {
-        if (audit == null)
-            throw new ArgumentNullException(nameof(audit));
+        ArgumentNullException.ThrowIfNull(audit);
 
         var entity = RuleExecutionAuditEntity.FromDomainModel(audit);
         _context.RuleExecutionAudits.Add(entity);
