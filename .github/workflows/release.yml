@@ -1,0 +1,132 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    runs-on: ubuntu-latest
+    env:
+      NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET SDKs
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            10.0.x
+            9.0.x
+            8.0.x
+
+      - name: Bump version 
+        id: version
+        shell: bash
+        run: |
+          set -e
+          PROJECTS=(
+            "src/RuleEngine.Core/RuleEngine.Core.csproj"
+            "src/RuleEngine.Sqlite/RuleEngine.Sqlite.csproj"
+            "src/CampaignEngine.Core/CampaignEngine.Core.csproj"
+          )
+
+          CURRENT_VERSION=$(grep -o '<Version>[^<]*</Version>' "${PROJECTS[0]}" | sed 's/<Version>\(.*\)<\/Version>/\1/')
+          IFS='.' read -ra VERSION_PARTS <<< "$CURRENT_VERSION"
+          NEW_VERSION="${VERSION_PARTS[0]}.${VERSION_PARTS[1]}.$((VERSION_PARTS[2] + 1))"
+
+          for PROJECT in "${PROJECTS[@]}"; do
+            sed -i "s|<Version>$CURRENT_VERSION</Version>|<Version>$NEW_VERSION</Version>|g" "$PROJECT"
+          done
+
+          README_FILES=(
+            "README.md"
+            "README.tr.md"
+          )
+
+          for FILE in "${README_FILES[@]}"; do
+            sed -i "s/\(Nergora\.RuleEngine\.Core --version \)[0-9.]\+/\1$NEW_VERSION/g" "$FILE"
+            sed -i "s/\(Nergora\.RuleEngine\.Sqlite --version \)[0-9.]\+/\1$NEW_VERSION/g" "$FILE"
+            sed -i "s/\(Nergora\.CampaignEngine\.Core --version \)[0-9.]\+/\1$NEW_VERSION/g" "$FILE"
+
+            sed -i "s/| Nergora\.RuleEngine\.Core | [0-9.]\+ |/| Nergora.RuleEngine.Core | $NEW_VERSION |/g" "$FILE"
+            sed -i "s/| Nergora\.RuleEngine\.Sqlite | [0-9.]\+ |/| Nergora.RuleEngine.Sqlite | $NEW_VERSION |/g" "$FILE"
+            sed -i "s/| Nergora\.CampaignEngine\.Core | [0-9.]\+ |/| Nergora.CampaignEngine.Core | $NEW_VERSION |/g" "$FILE"
+          done
+
+          echo "new_version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Build and pack
+        shell: bash
+        run: |
+          set -e
+          mkdir -p artifacts
+          PROJECTS=(
+            "src/RuleEngine.Core/RuleEngine.Core.csproj"
+            "src/RuleEngine.Sqlite/RuleEngine.Sqlite.csproj"
+            "src/CampaignEngine.Core/CampaignEngine.Core.csproj"
+          )
+
+          for PROJECT in "${PROJECTS[@]}"; do
+            dotnet build "$PROJECT" --configuration Release
+            dotnet pack "$PROJECT" --configuration Release --no-build --output artifacts
+          done
+
+      - name: Commit version bump
+        shell: bash
+        run: |
+          set -e
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add src/RuleEngine.Core/RuleEngine.Core.csproj
+          git add src/RuleEngine.Sqlite/RuleEngine.Sqlite.csproj
+          git add src/CampaignEngine.Core/CampaignEngine.Core.csproj
+          git add README.md
+          git add README.tr.md
+          git commit -m "chore: bump version to v${{ steps.version.outputs.new_version }} [skip ci]"
+          git push origin HEAD:main
+
+      - name: Tag and release
+        shell: bash
+        run: |
+          set -e
+          VERSION="${{ steps.version.outputs.new_version }}"
+
+          cat > release_notes.md <<EOF
+          ## Release v${VERSION}
+
+          ### Packages
+          - Nergora.RuleEngine.Core v${VERSION}
+          - Nergora.RuleEngine.Sqlite v${VERSION}
+          - Nergora.CampaignEngine.Core v${VERSION}
+
+          ### Installation
+          \`\`\`bash
+          dotnet add package Nergora.RuleEngine.Core --version ${VERSION}
+          dotnet add package Nergora.RuleEngine.Sqlite --version ${VERSION}
+          dotnet add package Nergora.CampaignEngine.Core --version ${VERSION}
+          \`\`\`
+          EOF
+
+          git tag "v${VERSION}"
+          git push origin "v${VERSION}"
+          gh release create "v${VERSION}" --title "Release v${VERSION}" --notes-file release_notes.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push to NuGet
+        if: env.NUGET_API_KEY != ''
+        shell: bash
+        run: |
+          set -e
+          find artifacts -name "*.nupkg" -not -name "*symbols*" | while read -r package; do
+            dotnet nuget push "$package" --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json --skip-duplicate
+          done
