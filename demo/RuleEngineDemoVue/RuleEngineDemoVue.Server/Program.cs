@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+
 using CampaignEngine.Core.Extensions;
 using CampaignEngine.Core.Models;
 using CampaignEngine.Core.Repositories;
@@ -10,8 +10,7 @@ using RuleEngine.Core.Managers;
 using RuleEngine.Core.Models;
 using RuleEngine.Core.Rule.DesignTime;
 using RuleEngine.Core.Rule.DesignTime.Parameters;
-using RuleEngine.Sqlite.Data;
-using RuleEngine.Sqlite.Extensions;
+using RuleEngine.Core.Repositories;
 using RuleEngineDemoVue.Server.Models;
 using RuleEngineDemoVue.Server.Services;
 
@@ -21,7 +20,9 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddMemoryCache();
 
-builder.Services.AddRuleEngineWithSqlite(builder.Configuration.GetConnectionString("RuleEngine") ?? "Data Source=ruleengine.db");
+builder.Services.AddRuleEngine();
+builder.Services.AddSingleton<IRuleRepository, InMemoryRuleRepository>();
+builder.Services.AddSingleton<IAuditRepository, InMemoryAuditRepository>();
 builder.Services.AddRuleEngineDesignTime();
 builder.Services.AddSingleton<IRuleEvaluator, DemoRuleEvaluator>();
 builder.Services.AddScoped<IRuleEngine, DemoRuleEngine>();
@@ -39,9 +40,7 @@ var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<RuleDbContext>();
-    await db.Database.EnsureDeletedAsync();
-    await db.Database.EnsureCreatedAsync();
+
 
     var ruleRepository = scope.ServiceProvider.GetRequiredService<IRuleRepository>();
 

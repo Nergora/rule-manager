@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using RuleEngine.Core.Abstractions;
 using RuleEngine.Core.Models;
-using RuleEngine.Sqlite.Data;
 using RuleEngineDemoVue.Server.Models;
 
 namespace RuleEngineDemoVue.Server.Controllers;
@@ -11,20 +9,18 @@ namespace RuleEngineDemoVue.Server.Controllers;
 [Route("api/[controller]")]
 public class RuleController : ControllerBase
 {
-    private readonly RuleDbContext _context;
+
     private readonly IRuleRepository _ruleRepository;
     private readonly IRuleEngine _ruleEngine;
     private readonly IRuleEvaluator _ruleEvaluator;
     private readonly IAuditRepository _auditRepository;
 
     public RuleController(
-        RuleDbContext context,
         IRuleRepository ruleRepository,
         IRuleEngine ruleEngine,
         IRuleEvaluator ruleEvaluator,
         IAuditRepository auditRepository)
     {
-        _context = context;
         _ruleRepository = ruleRepository;
         _ruleEngine = ruleEngine;
         _ruleEvaluator = ruleEvaluator;
@@ -80,15 +76,16 @@ public class RuleController : ControllerBase
     }
 
     [HttpGet("versions/{ruleId}")]
-    public async Task<ActionResult<IEnumerable<RuleVersionEntity>>> GetVersions(string ruleId)
+    public async Task<IActionResult> GetVersions(string ruleId)
     {
-        return await _context.RuleVersions.Where(v => v.RuleId == ruleId).ToListAsync();
+        return Ok(new List<object>());
     }
 
     [HttpGet("parameters/{ruleId}")]
-    public async Task<ActionResult<IEnumerable<RuleParameterEntity>>> GetParameters(string ruleId)
+    public async Task<IActionResult> GetParameters(string ruleId)
     {
-        return await _context.RuleParameters.Where(p => p.RuleId == ruleId).ToListAsync();
+        var rule = await _ruleRepository.GetByIdAsync(ruleId);
+        return Ok(rule?.Parameters ?? new Dictionary<string, object>());
     }
 
     [HttpPost("evaluate/{ruleId}")]
