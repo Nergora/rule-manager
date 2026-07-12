@@ -30,15 +30,15 @@ Roslyn tabanlı C# expression değerlendirme ile modern kural motoru.
 - ✅ Syntax validation ve error handling
 - ✅ Generic input/output modelleri
 
-### RuleEngine.Sqlite
-SQLite tabanlı persistence katmanı.
+### Demo Application (React + .NET 10)
+Kapsamlı bir e-ticaret simülatörü ve kural yönetimi paneli.
 
 **Özellikler:**
-- ✅ Entity Framework Core entegrasyonu
-- ✅ Kural versiyonlama ve rollback
-- ✅ Execution audit logging
-- ✅ Migration ve seeding desteği
-- ✅ CRUD operasyonları
+- ✅ Görsel Kural Oluşturucu (Visual Rule Builder)
+- ✅ Kural versiyonlama ve geçmiş takibi
+- ✅ Çalıştırma logları (Execution audit logs)
+- ✅ Kampanya simülatörü (sepete ürün ekleme, indirim/hediye uygulama)
+- ✅ Otomatik C# kod üretimi ve önizleme
 
 ### CampaignEngine.Core ⭐ YENİ
 RuleEngine.Core üzerine inşa edilmiş kampanya yönetim sistemi.
@@ -171,59 +171,6 @@ foreach (var result in campaigns)
 }
 ```
 
-### SQLite Persistence Kullanımı
-
-```csharp
-using RuleEngine.Sqlite.Data;
-using Microsoft.EntityFrameworkCore;
-
-// 1. DbContext'i yapılandırın
-services.AddDbContext<RuleDbContext>(options =>
-    options.UseSqlite("Data Source=ruleengine.db"));
-
-// 2. Repository'leri kullanın
-public class RuleService
-{
-    private readonly RuleDbContext _context;
-    
-    public async Task<RuleEntity> CreateRuleAsync(string name, string predicate, string result)
-    {
-        var rule = new RuleEntity
-        {
-            Name = name,
-            IsActive = true,
-            CreateDate = DateTime.UtcNow
-        };
-        
-        _context.Rules.Add(rule);
-        await _context.SaveChangesAsync();
-        
-        var version = new RuleVersionEntity
-        {
-            RuleId = rule.Id,
-            Version = 1,
-            Predicate = predicate,
-            Result = result,
-            IsActive = true,
-            CreateDate = DateTime.UtcNow
-        };
-        
-        _context.RuleVersions.Add(version);
-        await _context.SaveChangesAsync();
-        
-        return rule;
-    }
-    
-    public async Task<List<RuleEntity>> GetActiveRulesAsync()
-    {
-        return await _context.Rules
-            .Include(r => r.Versions)
-            .Where(r => r.IsActive)
-            .ToListAsync();
-    }
-}
-```
-
 ## 📦 Gereksinimler
 
 - .NET 8.0, .NET 9.0 veya .NET 10.0
@@ -240,7 +187,7 @@ RuleEngine/
 │   │   ├── Rule/                 # Kural yönetimi
 │   │   ├── Models/               # Veri modelleri
 │   │   ├── Abstractions/         # Interface'ler
-│   │   └── Services/             # Servisler
+│   │   └── Extensions/           # DI extensions
 │   │
 │   └── CampaignEngine.Core/      # Kampanya motoru
 │       ├── Models/               # Kampanya modelleri
@@ -250,7 +197,8 @@ RuleEngine/
 │       └── Extensions/           # Extension metodlar
 │
 ├── tests/                        # Test projeleri
-└── examples/                     # Örnek uygulamalar
+├── demo/                         # Demo uygulamalar
+└── docs/                         # Dökümantasyon
 ```
 
 ## 🔧 Konfigürasyon

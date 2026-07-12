@@ -12,7 +12,6 @@ The RuleEngine family is published as multiple NuGet packages. Each targets .NET
 | Package | Purpose | NuGet |
 | --- | --- | --- |
 | `Nergora.RuleEngine.Core` | Rule engine core | https://www.nuget.org/packages/Nergora.RuleEngine.Core/ |
-| `Nergora.RuleEngine.Sqlite` | SQLite persistence and audit | https://www.nuget.org/packages/Nergora.RuleEngine.Sqlite/ |
 | `Nergora.CampaignEngine.Core` | Campaign engine | https://www.nuget.org/packages/Nergora.CampaignEngine.Core/ |
 
 ## Versioning and Compatibility
@@ -32,8 +31,7 @@ The RuleEngine family is published as multiple NuGet packages. Each targets .NET
 ## Package Selection
 
 - In-memory rule execution only: `Nergora.RuleEngine.Core`
-- SQLite persistence and audit: `Nergora.RuleEngine.Sqlite`
-- Campaign rules: `Nergora.CampaignEngine.Core`
+- Campaign rules and simulations: `Nergora.CampaignEngine.Core`
 
 All features: `features.en.html`
 
