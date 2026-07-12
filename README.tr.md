@@ -504,18 +504,18 @@ public class CampaignManagerTests
 
 ```bash
 # RuleEngine.Core
-dotnet add package Nergora.RuleEngine.Core --version 0.9.11
+dotnet add package Nergora.RuleEngine.Core --version 1.0.0
 
 # CampaignEngine.Core
-dotnet add package Nergora.CampaignEngine.Core --version 0.9.11
+dotnet add package Nergora.CampaignEngine.Core --version 1.0.0
 ```
 
 ### Paket Bilgileri
 
 | Paket | Versiyon | .NET Desteği | İndirme |
 |-------|----------|---------------|----------|
-| Nergora.RuleEngine.Core | 0.9.11 | 8.0, 9.0, 10.0 | [![NuGet](https://img.shields.io/nuget/v/Nergora.RuleEngine.Core.svg)](https://www.nuget.org/packages/Nergora.RuleEngine.Core/) |
-| Nergora.CampaignEngine.Core | 0.9.11 | 8.0, 9.0, 10.0 | [![NuGet](https://img.shields.io/nuget/v/Nergora.CampaignEngine.Core.svg)](https://www.nuget.org/packages/Nergora.CampaignEngine.Core/) |
+| Nergora.RuleEngine.Core | 1.0.0 | 8.0, 9.0, 10.0 | [![NuGet](https://img.shields.io/nuget/v/Nergora.RuleEngine.Core.svg)](https://www.nuget.org/packages/Nergora.RuleEngine.Core/) |
+| Nergora.CampaignEngine.Core | 1.0.0 | 8.0, 9.0, 10.0 | [![NuGet](https://img.shields.io/nuget/v/Nergora.CampaignEngine.Core.svg)](https://www.nuget.org/packages/Nergora.CampaignEngine.Core/) |
 
 ## 🔧 Gelişmiş Kullanım
 
