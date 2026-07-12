@@ -85,6 +85,40 @@ export default function CartSimulator() {
     }
   };
 
+  const handleCheckout = async () => {
+    if (cart.length === 0) return;
+    setLoading(true);
+    try {
+      const input: CampaignRuleInput = {
+        totalAmount,
+        customerType,
+        orderCount: 1,
+        productCount,
+        orderTime: new Date(orderTime).toISOString(),
+        city,
+        category: cart.length > 0 ? cart[0].product.category : '',
+        usageCount: 0
+      };
+
+      const response = await fetch('/api/Campaign/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ input })
+      });
+      
+      if (!response.ok) throw new Error("Checkout failed");
+      
+      const data = await response.json();
+      alert(`Sipariş tamamlandı!\nUygulanan Kampanyalar: ${data.appliedCampaigns.join(', ') || 'Yok'}\nToplam İndirim: ${data.totalDiscount} TL`);
+      setCart([]);
+    } catch (e) {
+      console.error(e);
+      alert('Sipariş işlemi sırasında bir hata oluştu.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const addToCart = (product: Product) => {
     setCart(prev => {
       const existing = prev.find(p => p.product.id === product.id);
@@ -328,7 +362,7 @@ export default function CartSimulator() {
             )}
           </CardContent>
           <CardFooter>
-            <Button className="w-full" size="lg" disabled={cart.length === 0 || loading}>
+            <Button className="w-full" size="lg" disabled={cart.length === 0 || loading} onClick={handleCheckout}>
               {loading ? 'Calculating...' : 'Checkout'}
             </Button>
           </CardFooter>

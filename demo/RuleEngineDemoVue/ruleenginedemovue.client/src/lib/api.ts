@@ -18,27 +18,10 @@ export enum RuleStatus {
 }
 
 export interface RuleContent {
-    type: RuleType;
-    condition?: Condition;
-    action?: RuleAction;
-    rules?: RuleContent[];
-}
-
-export enum RuleType {
-    Condition = 0,
-    RuleSet = 1,
-}
-
-export interface Condition {
-    operator: string;
-    property?: string;
-    value?: any;
-    conditions?: Condition[];
-}
-
-export interface RuleAction {
-    type: string;
-    parameters?: Record<string, any>;
+    predicateExpression: string;
+    resultExpression: string;
+    language: string;
+    metadata: Record<string, any>;
 }
 
 export interface CreateRuleRequest {
@@ -56,6 +39,15 @@ export interface UpdateRuleRequest {
     status?: RuleStatus;
     parameters?: Record<string, any>;
     content?: RuleContent;
+}
+
+export interface RuleVersionSnapshot {
+    id: number;
+    ruleId: string;
+    version: number;
+    content: RuleContent;
+    createdAt: string;
+    createdBy?: string;
 }
 
 export interface RuleValidationRequest {
@@ -144,6 +136,22 @@ export const api = {
             body: JSON.stringify(input),
         });
         if (!res.ok) throw new Error('Failed to evaluate rule');
+        return res.json();
+    },
+
+    async getVersions(ruleId: string): Promise<RuleVersionSnapshot[]> {
+        const res = await fetch(`/api/Rule/versions/${ruleId}`);
+        if (!res.ok) throw new Error('Failed to fetch versions');
+        return res.json();
+    },
+
+    async createVersion(ruleId: string, request: { content: RuleContent; parameters?: any; activate?: boolean }): Promise<RuleDefinition> {
+        const res = await fetch(`/api/Rule/${ruleId}/versions`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(request),
+        });
+        if (!res.ok) throw new Error('Failed to create version');
         return res.json();
     }
 };

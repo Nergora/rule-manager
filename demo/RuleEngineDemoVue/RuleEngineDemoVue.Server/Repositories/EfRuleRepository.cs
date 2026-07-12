@@ -85,8 +85,17 @@ public class EfRuleRepository : IRuleRepository
         if (existing == null)
             throw new KeyNotFoundException($"Rule {ruleId} not found");
 
-        // Note: For a proper versioning system, you'd typically have a RuleVersion table.
-        // For this demo, we'll just update the existing rule with the new content and increment the version.
+        // Save current state as a historical snapshot
+        var snapshot = new RuleEngineDemoVue.Server.Models.RuleVersionSnapshot
+        {
+            RuleId = existing.Id,
+            Version = existing.Version,
+            Content = existing.Content,
+            CreatedAt = DateTime.UtcNow,
+            CreatedBy = "System"
+        };
+        _context.RuleVersions.Add(snapshot);
+
         existing.Version++;
         existing.Content = request.Content;
         existing.UpdatedAt = DateTime.UtcNow;

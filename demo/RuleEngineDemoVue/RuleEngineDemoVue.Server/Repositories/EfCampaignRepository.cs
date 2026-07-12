@@ -39,9 +39,10 @@ public class EfCampaignRepository : ICampaignRepository
         var campaign = _context.Campaigns.Find(id);
         if (campaign == null) return false;
         
-        if (!campaign.Quota.HasValue) return true;
+        if (!campaign.Quota.HasValue || campaign.Quota.Value <= 0) return true; // No quota limit
         
-        return campaign.Quota.Value > 0;
+        var usageCount = _context.CampaignUsages.Count(u => u.CampaignId == id);
+        return usageCount < campaign.Quota.Value;
     }
 
     public void AddCampaign(GeneralCampaign campaign)
@@ -74,5 +75,18 @@ public class EfCampaignRepository : ICampaignRepository
         _context.Campaigns.Remove(campaign);
         _context.SaveChanges();
         return true;
+    }
+
+    public void RecordUsage(int campaignId, string? orderId = null, string? customerId = null)
+    {
+        var usage = new RuleEngineDemoVue.Server.Models.CampaignUsage
+        {
+            CampaignId = campaignId,
+            UsedAt = DateTime.UtcNow,
+            OrderId = orderId,
+            CustomerId = customerId
+        };
+        _context.CampaignUsages.Add(usage);
+        _context.SaveChanges();
     }
 }

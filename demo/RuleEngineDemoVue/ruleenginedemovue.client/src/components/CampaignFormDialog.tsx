@@ -23,6 +23,8 @@ export default function CampaignFormDialog({ open, onOpenChange, campaign, onSav
   const [description, setDescription] = useState('');
   const [predicate, setPredicate] = useState('');
   const [result, setResult] = useState('');
+  const [usage, setUsage] = useState('');
+  const [quota, setQuota] = useState<number | ''>('');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -32,12 +34,16 @@ export default function CampaignFormDialog({ open, onOpenChange, campaign, onSav
       setDescription(campaign.description || '');
       setPredicate(campaign.predicate || '');
       setResult(campaign.result || '');
+      setUsage(campaign.usage || '');
+      setQuota(campaign.quota ?? '');
     } else {
       setCode('');
       setName('');
       setDescription('');
       setPredicate('Input.TotalAmount > 100m');
       setResult('Output.TotalDiscount = new Price(10m, "TRY");');
+      setUsage('Input.UsageCount < 10');
+      setQuota(100);
     }
   }, [campaign, open]);
 
@@ -50,7 +56,8 @@ export default function CampaignFormDialog({ open, onOpenChange, campaign, onSav
         description,
         predicate,
         result,
-        usage: "true",
+        usage: usage || "true",
+        quota: quota === '' ? undefined : Number(quota),
         priority: campaign?.priority || 1,
         startDate: campaign?.startDate || new Date().toISOString(),
         endDate: campaign?.endDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
@@ -94,10 +101,15 @@ export default function CampaignFormDialog({ open, onOpenChange, campaign, onSav
               <Input placeholder="Campaign Name" value={name} onChange={e => setName(e.target.value)} />
             </div>
           </div>
-          
-          <div className="space-y-2">
-            <Label>Description</Label>
-            <Textarea placeholder="Describe the campaign" value={description} onChange={e => setDescription(e.target.value)} />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Description</Label>
+              <Textarea placeholder="Describe the campaign" value={description} onChange={e => setDescription(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>Quota</Label>
+              <Input type="number" placeholder="Leave empty for unlimited" value={quota} onChange={e => setQuota(e.target.value ? Number(e.target.value) : '')} />
+            </div>
           </div>
           
           <Tabs defaultValue="visual" className="w-full pt-4">
@@ -137,6 +149,16 @@ export default function CampaignFormDialog({ open, onOpenChange, campaign, onSav
                   onChange={val => setResult(val || '')} 
                   height="120px" 
                 />
+              </div>
+              <div className="space-y-2">
+                <Label>Usage (C# Expression returning bool)</Label>
+                <CodeEditor 
+                  language="csharp" 
+                  value={usage} 
+                  onChange={val => setUsage(val || '')} 
+                  height="60px" 
+                />
+                <p className="text-xs text-muted-foreground">Example: <code>Input.UsageCount &lt; 5</code></p>
               </div>
             </TabsContent>
           </Tabs>

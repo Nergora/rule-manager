@@ -32,10 +32,18 @@ export default function RuleTester({ rules, defaultSelectedRuleId }: RuleTesterP
       const selected = rules.find(r => r.id === selectedRuleId);
       if (selected) {
         let paramsTemplate: any = {};
-        if (selected.parameters) {
-           Object.keys(selected.parameters).forEach(k => paramsTemplate[k] = "");
+        if (selected.parameters && Object.keys(selected.parameters).length > 0) {
+           Object.keys(selected.parameters).forEach(k => paramsTemplate[k] = selected.parameters![k]);
         } else {
-           paramsTemplate = { amount: 100 };
+           // Provide a sensible default based on OrderRuleInput
+           paramsTemplate = { 
+             TotalAmount: 150, 
+             CustomerType: "VIP",
+             OrderCount: 5,
+             ProductCount: 3,
+             City: "Istanbul",
+             Category: "Electronics"
+           };
         }
         setInputJson(JSON.stringify(paramsTemplate, null, 2));
       }

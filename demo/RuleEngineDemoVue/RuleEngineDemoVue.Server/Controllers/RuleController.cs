@@ -77,9 +77,13 @@ public class RuleController : ControllerBase
     }
 
     [HttpGet("versions/{ruleId}")]
-    public async Task<IActionResult> GetVersions(string ruleId)
+    public async Task<IActionResult> GetVersions(string ruleId, [FromServices] RuleEngineDemoVue.Server.Data.AppDbContext dbContext)
     {
-        return Ok(new List<object>());
+        var versions = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync(
+            System.Linq.Queryable.OrderByDescending(
+                System.Linq.Queryable.Where(dbContext.RuleVersions, v => v.RuleId == ruleId),
+                v => v.Version));
+        return Ok(versions);
     }
 
     [HttpGet("parameters/{ruleId}")]

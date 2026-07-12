@@ -12,7 +12,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import RuleFormDialog from './RuleFormDialog';
 import RuleHistoryDialog from './RuleHistoryDialog';
-import { PlayIcon, HistoryIcon, Edit2Icon, PlusIcon } from 'lucide-react';
+import { AuditLogsDialog } from './AuditLogsDialog';
+import { PlayIcon, HistoryIcon, Edit2Icon, PlusIcon, ActivityIcon } from 'lucide-react';
 
 interface RuleListProps {
   rules: RuleDefinition[];
@@ -24,6 +25,7 @@ interface RuleListProps {
 export default function RuleList({ rules, loading, onRefresh, onExecute }: RuleListProps) {
   const [formOpen, setFormOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [auditOpen, setAuditOpen] = useState(false);
   const [selectedRule, setSelectedRule] = useState<RuleDefinition | undefined>();
 
   const openEdit = (rule?: RuleDefinition) => {
@@ -34,6 +36,11 @@ export default function RuleList({ rules, loading, onRefresh, onExecute }: RuleL
   const openHistory = (rule: RuleDefinition) => {
     setSelectedRule(rule);
     setHistoryOpen(true);
+  };
+
+  const openAudit = (rule: RuleDefinition) => {
+    setSelectedRule(rule);
+    setAuditOpen(true);
   };
 
   if (loading) {
@@ -86,6 +93,9 @@ export default function RuleList({ rules, loading, onRefresh, onExecute }: RuleL
                     <Button variant="ghost" size="sm" onClick={() => onExecute(rule.id)} title="Execute/Test">
                       <PlayIcon className="w-4 h-4" />
                     </Button>
+                    <Button variant="ghost" size="sm" onClick={() => openAudit(rule)} title="Audit Logs">
+                      <ActivityIcon className="w-4 h-4" />
+                    </Button>
                     <Button variant="ghost" size="sm" onClick={() => openHistory(rule)} title="History">
                       <HistoryIcon className="w-4 h-4" />
                     </Button>
@@ -108,6 +118,13 @@ export default function RuleList({ rules, loading, onRefresh, onExecute }: RuleL
         open={historyOpen} 
         onOpenChange={setHistoryOpen} 
         rule={selectedRule} 
+      />
+      
+      <AuditLogsDialog 
+        isOpen={auditOpen} 
+        onOpenChange={setAuditOpen} 
+        ruleId={selectedRule?.id || null} 
+        ruleName={selectedRule?.name || null} 
       />
     </div>
   );

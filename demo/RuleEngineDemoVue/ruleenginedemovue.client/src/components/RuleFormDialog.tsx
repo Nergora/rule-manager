@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { VisualRuleBuilder } from './VisualRuleBuilder';
 
 interface RuleFormDialogProps {
   open: boolean;
@@ -20,15 +21,22 @@ export default function RuleFormDialog({ open, onOpenChange, rule, onSave }: Rul
   const [status, setStatus] = useState<RuleStatus>(RuleStatus.Active);
   const [loading, setLoading] = useState(false);
 
+  const [predicate, setPredicate] = useState('true');
+  const [result, setResult] = useState('true');
+
   useEffect(() => {
     if (rule) {
       setName(rule.name);
       setDescription(rule.description || '');
       setStatus(rule.status);
+      setPredicate(rule.content?.predicateExpression || 'true');
+      setResult(rule.content?.resultExpression || 'true');
     } else {
       setName('');
       setDescription('');
       setStatus(RuleStatus.Active);
+      setPredicate('true');
+      setResult('true');
     }
   }, [rule, open]);
 
@@ -36,6 +44,18 @@ export default function RuleFormDialog({ open, onOpenChange, rule, onSave }: Rul
     try {
       setLoading(true);
       if (rule) {
+        // First check if content changed to create a version
+        if (rule.content?.predicateExpression !== predicate || rule.content?.resultExpression !== result) {
+          await api.createVersion(rule.id, {
+            content: {
+              predicateExpression: predicate,
+              resultExpression: result,
+              language: 'csharp',
+              metadata: rule.content?.metadata || {}
+            }
+          });
+        }
+        
         const updateReq: UpdateRuleRequest = {
           name,
           description,
@@ -46,7 +66,12 @@ export default function RuleFormDialog({ open, onOpenChange, rule, onSave }: Rul
         const createReq: CreateRuleRequest = {
           name,
           description,
-          content: { type: 0 }, // Basic default content
+          content: { 
+            predicateExpression: predicate,
+            resultExpression: result,
+            language: 'csharp',
+            metadata: {}
+          },
         };
         await api.createRule(createReq);
       }
@@ -76,6 +101,27 @@ export default function RuleFormDialog({ open, onOpenChange, rule, onSave }: Rul
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="description" className="text-right">Description</Label>
             <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} className="col-span-3" />
+          </div>
+          <div className="grid grid-cols-4 items-start gap-4">
+            <Label className="text-right mt-2">Conditions</Label>
+            <div className="col-span-3 border rounded-md p-2">
+              <VisualRuleBuilder onCodeChange={setPredicate} initialCode={predicate} />
+            </div>
+          </div>
+          <div className="grid grid-cols-4 items-start gap-4">
+            <Label htmlFor="result" className="text-right mt-2">Result</Label>
+            <div className="col-span-3">
+              <Textarea 
+                id="result" 
+                value={result} 
+                onChange={(e) => setResult(e.target.value)} 
+                placeholder="e.g. true, false, or new { Discount = 10 }" 
+                className="font-mono text-sm" 
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                A valid C# expression returning the result.
+              </p>
+            </div>
           </div>
           {rule && (
             <div className="grid grid-cols-4 items-center gap-4">

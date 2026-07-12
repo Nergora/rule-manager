@@ -101,6 +101,27 @@ public class CampaignController : ControllerBase
         var results = _campaignManager.GetAvailableCampaigns(request.ProductKey, products, request.Input);
         return Ok(results);
     }
+
+    [HttpPost("checkout")]
+    public ActionResult Checkout([FromBody] CampaignEvaluationRequest request)
+    {
+        // 1. Evaluate campaigns
+        var results = _campaignManager.GetCampaign(request.Input, out var ruleSets);
+
+        // 2. Record usage for each applied campaign
+        foreach (var ruleSet in ruleSets)
+        {
+            // ruleSet.Id is the DB Campaign Id
+            _repository.RecordUsage(ruleSet.Id, orderId: Guid.NewGuid().ToString(), customerId: request.Input.CustomerType);
+        }
+
+        return Ok(new
+        {
+            Success = true,
+            AppliedCampaigns = ruleSets.Select(r => r.Code).ToList(),
+            TotalDiscount = results.Sum(r => r.TotalDiscount.Value)
+        });
+    }
 }
 
 public sealed class CampaignEvaluationRequest
