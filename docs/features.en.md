@@ -21,16 +21,6 @@ This page summarizes all features by package.
 - DEBUG_RULES PDB output (debug)
 - Rule execution result model (RuleExecutionResult)
 
-## RuleEngine.Sqlite
-
-- EF Core persistence
-- Rule / RuleVersion / RuleParameter tables
-- Rule execution audit logging
-- Version activation and rollback
-- Parameter serialization (System.Text.Json)
-- Migration and seeding flow
-- IRuleRepository and IAuditRepository implementations
-
 ## CampaignEngine.Core
 
 - Campaign layer built on RuleEngine.Core

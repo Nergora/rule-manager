@@ -25,18 +25,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRuleEngine();
 ```
 
-## 2) SQLite ile kalicilik (opsiyonel)
-
-```bash
-dotnet add package Nergora.RuleEngine.Sqlite
-```
-
-```csharp
-using RuleEngine.Sqlite.Extensions;
-
-builder.Services.AddRuleEngineWithSqlite("Data Source=ruleengine.db");
-```
-
 ## 3) Kampanya motoru (opsiyonel)
 
 ```bash

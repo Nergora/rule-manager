@@ -20,18 +20,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRuleEngine();
 ```
 
-## 2) SQLite persistence (optional)
-
-```bash
-dotnet add package Nergora.RuleEngine.Sqlite
-```
-
-```csharp
-using RuleEngine.Sqlite.Extensions;
-
-builder.Services.AddRuleEngineWithSqlite("Data Source=ruleengine.db");
-```
-
 ## 3) Campaign engine (optional)
 
 ```bash

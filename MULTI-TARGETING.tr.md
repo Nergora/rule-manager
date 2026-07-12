@@ -7,7 +7,6 @@ Tüm NuGet paketleri artık .NET 8.0, .NET 9.0 ve .NET 10.0 desteği ile geliyor
 | Paket | .NET 8.0 | .NET 9.0 | .NET 10.0 | Versiyon |
 |-------|----------|----------|-----------|----------|
 | **Nergora.RuleEngine.Core** | ✅ | ✅ | ✅ | v1.0.3 |
-| **Nergora.RuleEngine.Sqlite** | ✅ | ✅ | ✅ | v1.0.3 |
 | **Nergora.CampaignEngine.Core** | ✅ | ✅ | ✅ | v1.0.2 |
 
 ## 🚀 Kullanım
@@ -75,15 +74,13 @@ lib/
     └── CampaignEngine.Core.dll
 ```
 
-### Nergora.RuleEngine.Sqlite v1.0.3
+###  v1.0.3
 ```
 lib/
 ├── net8.0/
-│   └── RuleEngine.Sqlite.dll
 ├── net9.0/
-│   └── RuleEngine.Sqlite.dll
 └── net10.0/
-    └── RuleEngine.Sqlite.dll
+    └── 
 ```
 
 ## ✅ Test Sonuçları

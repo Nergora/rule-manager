@@ -10,7 +10,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial release of RuleEngine
 - Core rule compilation and execution engine
-- SQLite persistence layer
 - ASP.NET Core MVC sample application
 - KnockoutJS rule builder UI
 - Comprehensive test suite
@@ -26,7 +25,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Async/await support for all operations
   - Type-safe generic input/output models
 
-- **SQLite Persistence**
   - `IRuleRepository` for rule CRUD operations
   - `IAuditRepository` for execution auditing
   - Entity Framework Core integration
@@ -53,7 +51,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Testing**
   - Comprehensive unit test suite
-  - Integration tests with SQLite
   - xUnit and FluentAssertions
   - Test coverage for core functionality
   - Mock-based testing for repositories
@@ -69,7 +66,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Target Framework**: .NET 8.0
 - **Dependencies**: 
   - Microsoft.CodeAnalysis.CSharp.Scripting 4.8.0
-  - Microsoft.EntityFrameworkCore.Sqlite 8.0.0
   - Microsoft.Extensions.DependencyInjection 8.0.0
 - **Performance**: 
   - Rule compilation: ~50-100ms
@@ -77,7 +73,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Thread-safe concurrent execution
 - **Features**:
   - Roslyn-based C# compilation
-  - SQLite database with EF Core
   - RESTful API endpoints
   - Real-time rule validation
   - Comprehensive error handling
@@ -91,7 +86,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### NuGet Packages
 - `RuleEngine.Core` - Core rule engine functionality
-- `RuleEngine.Sqlite` - SQLite persistence layer
 
 ---
 
@@ -100,7 +94,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### 1.0.0 (2025-09-22)
 - Initial release
 - Complete rule engine implementation
-- SQLite persistence
 - MVC sample application
 - Comprehensive documentation
 
@@ -115,14 +108,13 @@ RuleEngine is a complete port of a legacy rule engine with modern .NET 8 feature
 1. **Static RuleManager**: The core `RuleManager` remains static for compatibility
 2. **RuleCompiler**: Enhanced with better error handling and async support
 3. **RuleSet**: Improved with better type safety and performance
-4. **Persistence**: Added SQLite support with EF Core
+4. **Persistence**: Added database support with EF Core
 5. **UI**: Ported KnockoutJS frontend with modern styling
 
 ### Breaking Changes
 - None in 1.0.0 - this is a new project
 
 ### New Features
-- SQLite persistence layer
 - ASP.NET Core MVC integration
 - Enhanced error handling
 - Better performance

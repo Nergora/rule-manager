@@ -170,25 +170,27 @@ public static class MetadataManager
     /// <param name="isPredicate">Filters metadata as predicate or result metadata.</param>
     /// <param name="categories">Filters metadata by category IDs.</param>
     /// <returns></returns>
-    public static Dictionary<string, NamedRuleMetadata> GetMetadaByCategory(bool isPredicate = true, params int[] categories)
+    public static Dictionary<string, NamedRuleMetadata> GetMetadataByCategory(bool isPredicate = true, params int[] categories)
     {
-        var result = new Dictionary<string, NamedRuleMetadata>();
-        do
-        {
-        } while (!Initialized);
+        WaitInitialization();
 
         if (categories == null || categories.Length == 0)
-            result = NamedRuleMetadatas.Where(c => c.Value.IsPredicate == isPredicate)
+            return NamedRuleMetadatas.Where(c => c.Value.IsPredicate == isPredicate)
                 .ToDictionary(k => k.Key, v => v.Value);
-        else
-        {
-            var categoryMetadatas = RulesByCategory.Where(c => categories.Any(x => x.ToString() == c.Key)).SelectMany(c => c.Value);
-            result = NamedRuleMetadatas.Where(
-                    c => c.Value.IsPredicate == isPredicate && categoryMetadatas.Any(x => x == c.Key))
-                .ToDictionary(k => k.Key, v => v.Value);
-        }
-        return result;
+
+        var categoryMetadatas = RulesByCategory
+            .Where(c => categories.Any(x => x.ToString() == c.Key))
+            .SelectMany(c => c.Value);
+
+        return NamedRuleMetadatas.Where(
+                c => c.Value.IsPredicate == isPredicate && categoryMetadatas.Any(x => x == c.Key))
+            .ToDictionary(k => k.Key, v => v.Value);
     }
+
+    /// <inheritdoc cref="GetMetadataByCategory"/>
+    [Obsolete("Use GetMetadataByCategory (corrected spelling) instead.")]
+    public static Dictionary<string, NamedRuleMetadata> GetMetadaByCategory(bool isPredicate = true, params int[] categories)
+        => GetMetadataByCategory(isPredicate, categories);
 
     /// <summary>
     /// Predefined rule metadata, available as static accessors.

@@ -8,7 +8,7 @@ namespace RuleEngine.Core.Rule;
 /// </summary>
 public sealed class RuleScope : IDisposable
 {
-    private static readonly AsyncLocal<RuleScopeWrapper> ScopeContext = new AsyncLocal<RuleScopeWrapper>();
+    private static readonly AsyncLocal<RuleScopeWrapper?> ScopeContext = new AsyncLocal<RuleScopeWrapper?>();
 
     private static RuleScope? CurrentScope
     {

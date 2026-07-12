@@ -7,7 +7,7 @@ layout: default
 
 # RuleEngine & CampaignEngine
 
-RuleEngine is an enterprise-ready NuGet package family for dynamic rule execution and campaign management in .NET. It provides Roslyn-based C# expression compilation, versioning, audit logging, and SQLite persistence.
+RuleEngine is an enterprise-ready NuGet package family for dynamic rule execution and campaign management in .NET. It provides Roslyn-based C# expression compilation, versioning, audit logging, .
 
 ## Why RuleEngine?
 
@@ -20,7 +20,6 @@ RuleEngine is an enterprise-ready NuGet package family for dynamic rule executio
 ## Packages
 
 - `Nergora.RuleEngine.Core` - Rule engine core
-- `Nergora.RuleEngine.Sqlite` - SQLite persistence and audit
 - `Nergora.CampaignEngine.Core` - Campaign engine
 
 See `packages.en.html` for details.
@@ -48,7 +47,7 @@ More: `getting-started.en.html`
 - Architecture: `architecture.en.html`
 - RuleEngine.Core: `ruleengine-core.en.html`
 - CampaignEngine.Core: `campaignengine-core.en.html`
-- SQLite provider: `sqlite-provider.en.html`
+
 - Rule authoring: `rule-authoring.en.html`
 - Operations & performance: `operations.en.html`
 - Security: `security.en.html`

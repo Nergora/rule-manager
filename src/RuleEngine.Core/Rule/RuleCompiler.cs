@@ -321,14 +321,16 @@ public class RuleCompiler<TInput, TReturn>
 }
 
 /// <summary>
-/// 
+/// Global defaults for all <see cref="RuleCompiler{TInput,TReturn}"/> instances.
 /// </summary>
 public static class RuleCompilerGlobals
 {
     /// <summary>
-    /// 
+    /// Current version of the rule compiler.
     /// </summary>
-    public static double Version = 1.4;
+    public static string Version = "1.4";
+
+    private static readonly object _syncRoot = new object();
 
     public static readonly List<string> Namespaces = new List<string>
     {
@@ -356,7 +358,8 @@ public static class RuleCompilerGlobals
     };
 
     /// <summary>
-    /// Adds to default types.
+    /// Adds additional types to the global namespace and reference lists.
+    /// Thread-safe.
     /// </summary>
     /// <param name="types"></param>
     public static void AddTypes(params Type[] types)
@@ -364,12 +367,15 @@ public static class RuleCompilerGlobals
         if (types == null)
             return;
 
-        foreach (var type in types)
+        lock (_syncRoot)
         {
-            if (!string.IsNullOrEmpty(type.Namespace) && !Namespaces.Contains(type.Namespace))
-                Namespaces.Add(type.Namespace);
-            if (!References.Contains(type.Assembly))
-                References.Add(type.Assembly);
+            foreach (var type in types)
+            {
+                if (!string.IsNullOrEmpty(type.Namespace) && !Namespaces.Contains(type.Namespace))
+                    Namespaces.Add(type.Namespace);
+                if (!References.Contains(type.Assembly))
+                    References.Add(type.Assembly);
+            }
         }
     }
 }
@@ -405,12 +411,16 @@ public class RuleRuntimeException : Exception
     /// <summary>
     /// Created with the thrown exception and rule string.
     /// </summary>
-    /// <param name="exception"></param>
-    /// <param name="ruleString"></param>
-    public RuleRuntimeException(Exception exception, string ruleString, string input, string code)
+    /// <param name="exception">The original exception.</param>
+    /// <param name="ruleString">The rule script that caused the exception.</param>
+    /// <param name="input">Serialized input that was passed to the rule.</param>
+    /// <param name="code">The rule code / identifier.</param>
+    /// <param name="priority">Optional rule priority for diagnostics.</param>
+    public RuleRuntimeException(Exception exception, string ruleString, string input, string code, int? priority = null)
         : base(exception.Message, exception)
     {
         Code = code;
         Input = input;
+        Priority = priority;
     }
 }

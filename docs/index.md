@@ -7,7 +7,7 @@ layout: default
 
 # RuleEngine & CampaignEngine
 
-RuleEngine, .NET uygulamalarinda dinamik kural calistirma ve kampanya yonetimi icin tasarlanmis, kurumsal kullanima uygun bir NuGet paket ailesidir. Roslyn tabanli C# expression derleme, versiyonlama, audit logging ve SQLite kaliciligi ile gelir.
+RuleEngine, .NET uygulamalarinda dinamik kural calistirma ve kampanya yonetimi icin tasarlanmis, kurumsal kullanima uygun bir NuGet paket ailesidir. Roslyn tabanli C# expression derleme, versiyonlama, audit logging ile gelir.
 
 ## Neden RuleEngine?
 
@@ -20,7 +20,6 @@ RuleEngine, .NET uygulamalarinda dinamik kural calistirma ve kampanya yonetimi i
 ## Paketler
 
 - `Nergora.RuleEngine.Core` - Kural motoru cekirdegi
-- `Nergora.RuleEngine.Sqlite` - SQLite kalicilik ve audit
 - `Nergora.CampaignEngine.Core` - Kampanya motoru
 
 Detaylar icin `packages.html` sayfasina bakin.
@@ -48,7 +47,7 @@ Daha fazlasi: `getting-started.html`
 - Mimari: `architecture.html`
 - RuleEngine.Core: `ruleengine-core.html`
 - CampaignEngine.Core: `campaignengine-core.html`
-- SQLite saglayici: `sqlite-provider.html`
+
 - Kural yazimi: `rule-authoring.html`
 - Operasyon ve performans: `operations.html`
 - Guvenlik: `security.html`

@@ -10,7 +10,6 @@ RuleEngine, core rule execution, persistence ve kampanya katmanlarindan olusan m
 ## Bilesenler
 
 - RuleEngine.Core: Kural derleme, calistirma, metadata, versioning
-- RuleEngine.Sqlite: EF Core ile kalicilik, audit logging
 - CampaignEngine.Core: Kampanya secimi, onceliklendirme, uygulama
 
 ## Veri Akisi
@@ -28,7 +27,7 @@ CampaignInput -> CampaignManager -> RuleProvider -> RuleSet -> CampaignOutput
 ## Modul Sinirlari
 
 - Core katman, evaluator ve repository arayuzleri ile soyutlanir.
-- Sqlite paketi, repository implementasyonlarini ve migrationlarini barindirir.
+
 - CampaignEngine, RuleEngine.Core uzerine insa edilir ve kendi repository soyutlamasina sahiptir.
 
 ## Genisletilebilirlik Noktalari

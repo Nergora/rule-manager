@@ -4,7 +4,7 @@
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![NuGet](https://img.shields.io/badge/NuGet-v1.0.3-blue)](https://www.nuget.org/)
 
-Modern, genişletilebilir ve yüksek performanslı kural motoru ve kampanya yönetim sistemi. Roslyn tabanlı C# expression değerlendirme ile dinamik iş kuralları oluşturun, SQLite veya özel repository'ler ile saklayın, kampanya sistemleri geliştirin.
+Modern, genişletilebilir ve yüksek performanslı kural motoru ve kampanya yönetim sistemi. Roslyn tabanlı C# expression değerlendirme ile dinamik iş kuralları oluşturun, özel repository'ler ile saklayın, kampanya sistemleri geliştirin.
 
 ## 🌟 Neden RuleEngine?
 
@@ -506,9 +506,6 @@ public class CampaignManagerTests
 # RuleEngine.Core
 dotnet add package Nergora.RuleEngine.Core --version 1.1.18
 
-# RuleEngine.Sqlite
-dotnet add package Nergora.RuleEngine.Sqlite --version 1.1.18
-
 # CampaignEngine.Core
 dotnet add package Nergora.CampaignEngine.Core --version 1.1.18
 ```
@@ -518,7 +515,6 @@ dotnet add package Nergora.CampaignEngine.Core --version 1.1.18
 | Paket | Versiyon | .NET Desteği | İndirme |
 |-------|----------|---------------|----------|
 | Nergora.RuleEngine.Core | 1.1.18 | 8.0, 9.0, 10.0 | [![NuGet](https://img.shields.io/nuget/v/Nergora.RuleEngine.Core.svg)](https://www.nuget.org/packages/Nergora.RuleEngine.Core/) |
-| Nergora.RuleEngine.Sqlite | 1.1.18 | 8.0, 9.0, 10.0 | [![NuGet](https://img.shields.io/nuget/v/Nergora.RuleEngine.Sqlite.svg)](https://www.nuget.org/packages/Nergora.RuleEngine.Sqlite/) |
 | Nergora.CampaignEngine.Core | 1.1.18 | 8.0, 9.0, 10.0 | [![NuGet](https://img.shields.io/nuget/v/Nergora.CampaignEngine.Core.svg)](https://www.nuget.org/packages/Nergora.CampaignEngine.Core/) |
 
 ## 🔧 Gelişmiş Kullanım

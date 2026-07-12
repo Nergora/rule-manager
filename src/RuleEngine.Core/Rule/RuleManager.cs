@@ -1,29 +1,44 @@
 using System.Collections.Concurrent;
 using System.Reflection;
+using Microsoft.Extensions.Logging;
 using RuleEngine.Core.Models;
 
 namespace RuleEngine.Core.Rule;
 
 /// <summary>
-/// Manages rule sets by provider.
+/// Manages rule sets by provider. Providers are treated as singletons per type.
 /// </summary>
 public static class RuleManager
 {
     // We key by provider type because workers are tied to the provider type, not instance.
-    private static readonly ConcurrentDictionary<Type, ProviderWorker> ProviderWorkers = new ConcurrentDictionary<Type, ProviderWorker>();
-        
-    private static ProviderWorker<TRuleSet, TInput, TOutput> GetProviderWorker<TRuleSet, TInput, TOutput>(IRuleProvider<TRuleSet, TInput, TOutput> provider)
+    private static readonly ConcurrentDictionary<Type, ProviderWorker> ProviderWorkers = new();
+
+    /// <summary>
+    /// Optional logger used by provider workers and the background refresh thread.
+    /// Set this early in application startup via <see cref="Configure"/>.
+    /// </summary>
+    public static ILogger? Logger { get; private set; }
+
+    /// <summary>
+    /// Configures the static logger used by all provider workers.
+    /// Call once at application startup before any rule evaluation.
+    /// </summary>
+    public static void Configure(ILogger? logger)
+    {
+        Logger = logger;
+    }
+
+    private static ProviderWorker<TRuleSet, TInput, TOutput> GetProviderWorker<TRuleSet, TInput, TOutput>(
+        IRuleProvider<TRuleSet, TInput, TOutput> provider)
         where TRuleSet : RuleSet<TInput, TOutput>
         where TInput : RuleInputModel
     {
-        var providerWorker = ProviderWorkers.GetOrAdd(provider.GetType(),
-                p =>
-                {
-                    var newProviderWorker = new ProviderWorker<TRuleSet, TInput, TOutput>(provider);
-                    _ = newProviderWorker.ProcessAsync();
-                    return newProviderWorker;
-                })
-            as ProviderWorker<TRuleSet, TInput, TOutput>;
+        var providerWorker = ProviderWorkers.GetOrAdd(provider.GetType(), providerType =>
+        {
+            var newProviderWorker = new ProviderWorker<TRuleSet, TInput, TOutput>(provider, Logger);
+            _ = newProviderWorker.ProcessAsync();
+            return newProviderWorker;
+        }) as ProviderWorker<TRuleSet, TInput, TOutput>;
 
         if (providerWorker == null)
             throw new ArgumentException("Unsupported RuleSet type.", nameof(provider));
@@ -56,30 +71,18 @@ public static class RuleManager
     /// <summary>
     /// Returns all rule sets provided by the provider.
     /// </summary>
-    /// <typeparam name="TRuleSet"></typeparam>
-    /// <typeparam name="TInput"></typeparam>
-    /// <typeparam name="TOutput"></typeparam>
-    /// <param name="provider"></param>
-    /// <returns>Dictionary of rule code to <typeparamref name="TRuleSet"/>.</returns>
     public static IDictionary<string, TRuleSet> GetRuleSets<TRuleSet, TInput, TOutput>(
         this IRuleProvider<TRuleSet, TInput, TOutput> provider)
         where TRuleSet : RuleSet<TInput, TOutput>
         where TInput : RuleInputModel
     {
         var providerWorker = GetProviderWorker(provider);
-
         return providerWorker.RuleSets;
     }
 
     /// <summary>
     /// Executes rule sets matching the predicate for <paramref name="input"/>.
     /// </summary>
-    /// <typeparam name="TRuleSet"></typeparam>
-    /// <typeparam name="TInput"></typeparam>
-    /// <typeparam name="TOutput"></typeparam>
-    /// <param name="provider"></param>
-    /// <param name="input"></param>
-    /// <returns></returns>
     public static IEnumerable<TOutput> Execute<TRuleSet, TInput, TOutput>(
         IRuleProvider<TRuleSet, TInput, TOutput> provider, TInput input)
         where TRuleSet : RuleSet<TInput, TOutput>
@@ -92,31 +95,18 @@ public static class RuleManager
     /// <summary>
     /// Executes rule sets matching the predicate for <paramref name="input"/>.
     /// </summary>
-    /// <typeparam name="TRuleSet"></typeparam>
-    /// <typeparam name="TInput"></typeparam>
-    /// <typeparam name="TOutput"></typeparam>
-    /// <param name="provider"></param>
-    /// <param name="input"></param>
-    /// <returns></returns>
-    public static async Task<IEnumerable<TOutput>> ExecuteAsync<TRuleSet, TInput, TOutput>(
+    public static Task<IEnumerable<TOutput>> ExecuteAsync<TRuleSet, TInput, TOutput>(
         IRuleProvider<TRuleSet, TInput, TOutput> provider, TInput input)
         where TRuleSet : RuleSet<TInput, TOutput>
         where TInput : RuleInputModel
     {
         var providerWorker = GetProviderWorker(provider);
-        return await providerWorker.ExecuteAsync(input);
+        return providerWorker.ExecuteAsync(input);
     }
 
     /// <summary>
     /// Executes multi-result rule sets matching the predicate for <paramref name="input"/>.
     /// </summary>
-    /// <typeparam name="TRuleSet"></typeparam>
-    /// <typeparam name="TInput"></typeparam>
-    /// <typeparam name="TOutput"></typeparam>
-    /// <param name="provider"></param>
-    /// <param name="input"></param>
-    /// <param name="availableResults"></param>
-    /// <returns></returns>
     public static IEnumerable<TOutput> Execute<TRuleSet, TInput, TOutput>(
         IRuleProvider<TRuleSet, TInput, TOutput> provider, TInput input, IEnumerable<TOutput> availableResults)
         where TRuleSet : MultiResultRuleSet<TInput, TOutput>
@@ -129,34 +119,33 @@ public static class RuleManager
     /// <summary>
     /// Executes multi-result rule sets matching the predicate for <paramref name="input"/>.
     /// </summary>
-    /// <typeparam name="TRuleSet"></typeparam>
-    /// <typeparam name="TInput"></typeparam>
-    /// <typeparam name="TOutput"></typeparam>
-    /// <param name="provider"></param>
-    /// <param name="input"></param>
-    /// <param name="availableResults"></param>
-    /// <returns></returns>
-    public static async Task<IEnumerable<TOutput>> ExecuteAsync<TRuleSet, TInput, TOutput>(
+    public static Task<IEnumerable<TOutput>> ExecuteAsync<TRuleSet, TInput, TOutput>(
         IRuleProvider<TRuleSet, TInput, TOutput> provider, TInput input, IEnumerable<TOutput> availableResults)
         where TRuleSet : MultiResultRuleSet<TInput, TOutput>
         where TInput : RuleInputModel
     {
         var providerWorker = GetProviderWorker(provider);
-        return await providerWorker.ExecuteAsync(input, availableResults);
+        return providerWorker.ExecuteAsync(input, availableResults);
     }
 
-    private static readonly MethodInfo _genericGetProviderWorkerMethod = typeof(RuleManager).GetMethods(BindingFlags.NonPublic | BindingFlags.Static)
-        .First(m => m.Name == "GetProviderWorker" && m.IsGenericMethod);
-    private static readonly ConcurrentDictionary<Type[], MethodInfo> _getProviderWorkerMethods = new ConcurrentDictionary<Type[], MethodInfo>();
-        
+    private static readonly MethodInfo _genericGetProviderWorkerMethod =
+        typeof(RuleManager).GetMethods(BindingFlags.NonPublic | BindingFlags.Static)
+            .First(m => m.Name == "GetProviderWorker" && m.IsGenericMethod);
+
+    private static readonly ConcurrentDictionary<Type[], MethodInfo> _getProviderWorkerMethods =
+        new(new TypeArrayEqualityComparer());
+
     private static ProviderWorker GetProviderWorker(IRuleProvider ruleProvider)
     {
-        var genericTypes = ruleProvider.GetType().GetInterfaces().First(i => i.IsGenericType).GetGenericArguments();
-        var method = _getProviderWorkerMethods.GetOrAdd(genericTypes, types =>
-        {
-            return _genericGetProviderWorkerMethod.MakeGenericMethod(types);
-        });
-        return method.Invoke(null, new[] { ruleProvider }) as ProviderWorker ?? throw new InvalidOperationException("Failed to get provider worker");
+        var genericTypes = ruleProvider.GetType().GetInterfaces()
+            .First(i => i.IsGenericType)
+            .GetGenericArguments();
+
+        var method = _getProviderWorkerMethods.GetOrAdd(genericTypes,
+            types => _genericGetProviderWorkerMethod.MakeGenericMethod(types));
+
+        return method.Invoke(null, new[] { ruleProvider }) as ProviderWorker
+               ?? throw new InvalidOperationException("Failed to get provider worker");
     }
 
     public static void WaitInitialization(this IRuleProvider ruleProvider)
@@ -164,16 +153,17 @@ public static class RuleManager
         GetProviderWorker(ruleProvider);
     }
 
-    public static void WaitInitialization<TRuleSet, TInput, TOutput>(this IRuleProvider<TRuleSet, TInput, TOutput> provider)
+    public static void WaitInitialization<TRuleSet, TInput, TOutput>(
+        this IRuleProvider<TRuleSet, TInput, TOutput> provider)
         where TRuleSet : RuleSet<TInput, TOutput>
         where TInput : RuleInputModel
     {
         GetProviderWorker(provider);
     }
 
-    private static readonly CancellationTokenSource CancelToken = new CancellationTokenSource();
+    private static readonly CancellationTokenSource CancelToken = new();
 
-    private static readonly Thread BackgroundThread = new Thread(Worker)
+    private static readonly Thread BackgroundThread = new(Worker)
     {
         IsBackground = true,
         Name = "RuleManager"
@@ -186,15 +176,46 @@ public static class RuleManager
 
     private static void Worker()
     {
-        // Run on background thread to allow async processing.
         Task.Run(async () =>
+        {
+            while (!CancelToken.IsCancellationRequested)
             {
-                while (!CancelToken.IsCancellationRequested)
+                try
                 {
                     await Task.WhenAll(ProviderWorkers.Values.Select(pw => pw.ProcessAsync()));
+                }
+                catch (Exception ex)
+                {
+                    Logger?.LogError(ex, "Error during RuleManager background refresh cycle.");
+                }
+
+                try
+                {
                     await Task.Delay(TimeSpan.FromSeconds(30), CancelToken.Token);
                 }
-            }, CancelToken.Token)
-            .Wait(CancelToken.Token);
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
+            }
+        }, CancelToken.Token).Wait();
+    }
+
+    /// <summary>
+    /// Equality comparer for Type[] keys in the method cache dictionary.
+    /// </summary>
+    private sealed class TypeArrayEqualityComparer : IEqualityComparer<Type[]>
+    {
+        public bool Equals(Type[]? x, Type[]? y)
+        {
+            if (x == null && y == null) return true;
+            if (x == null || y == null) return false;
+            return x.SequenceEqual(y);
+        }
+
+        public int GetHashCode(Type[] obj)
+        {
+            return obj.Aggregate(17, (acc, t) => acc * 31 + t.GetHashCode());
+        }
     }
 }

@@ -20,7 +20,6 @@ RuleEngine/
 │   │   ├── CampaignManager.cs        # Main campaign manager
 │   │   └── README.md                 # Detailed documentation
 │   │
-│   ├── RuleEngine.Sqlite/            # SQLite implementation
 │   └── RuleEngine.Mvc/               # Web UI
 │
 ├── examples/
@@ -57,7 +56,7 @@ CampaignEngine.Example
 
 ### Published Packages
 - `Nergora.RuleEngine.Core` (v1.1.11) - .NET 8.0, 9.0 & 10.0 ⭐
-- `Nergora.RuleEngine.Sqlite` (v1.1.11) - .NET 8.0, 9.0 & 10.0 ⭐
+- `` (v1.1.11) - .NET 8.0, 9.0 & 10.0 ⭐
 - `Nergora.CampaignEngine.Core` (v1.1.11) - .NET 8.0, 9.0 & 10.0 ⭐
 
 ### Dependencies
