@@ -29,6 +29,11 @@ Check out how easily rules can be configured and created via the front-end demo:
 
 ![Demo Recording](docs/assets/demo_rule_creation.webp)
 
+### Campaign Engine Simulator
+The Campaign Engine sits on top of the Rule Engine to manage complex e-commerce scenarios. It evaluates the cart state in real-time, matching user attributes (like `CustomerType` or `City`) against rule sets to instantly apply discounts and campaigns.
+
+![Campaign Simulator](docs/assets/campaign_simulator.png)
+
 ---
 
 ## 🚀 How It Works
