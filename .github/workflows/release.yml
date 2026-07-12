@@ -124,7 +124,7 @@ jobs:
         id: nuget-login
         with:
           # ÖNEMLİ: Buraya policy'yi oluşturan KİŞİSEL NuGet kullanıcı adınızı yazmalısınız (Nergora değil).
-          user: Emrek-stack # Eğer NuGet kullanıcı adınız farklıysa burayı değiştirin!
+          user: Emre.Karahan # Eğer NuGet kullanıcı adınız farklıysa burayı değiştirin!
 
       - name: Push to NuGet
         shell: bash
