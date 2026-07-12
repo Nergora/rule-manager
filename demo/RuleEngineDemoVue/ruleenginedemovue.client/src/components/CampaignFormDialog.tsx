@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { CodeEditor } from "@/components/ui/code-editor";
 
 interface CampaignFormDialogProps {
   open: boolean;
@@ -98,21 +99,21 @@ export default function CampaignFormDialog({ open, onOpenChange, campaign, onSav
           
           <div className="space-y-2">
             <Label>Predicate (C# Expression returning bool)</Label>
-            <Textarea 
-              className="font-mono text-sm" 
+            <CodeEditor 
+              language="csharp" 
               value={predicate} 
-              onChange={e => setPredicate(e.target.value)} 
-              placeholder="Input.TotalAmount > 100m"
+              onChange={val => setPredicate(val || '')} 
+              height="100px" 
             />
           </div>
           
           <div className="space-y-2">
             <Label>Result (C# Statements)</Label>
-            <Textarea 
-              className="font-mono text-sm" 
+            <CodeEditor 
+              language="csharp" 
               value={result} 
-              onChange={e => setResult(e.target.value)} 
-              placeholder={'Output.TotalDiscount = new Price(10m, "TRY");'}
+              onChange={val => setResult(val || '')} 
+              height="100px" 
             />
           </div>
         </div>

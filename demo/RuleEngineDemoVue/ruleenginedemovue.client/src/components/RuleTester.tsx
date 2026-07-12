@@ -5,6 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CodeEditor } from "@/components/ui/code-editor";
 
 interface RuleTesterProps {
   rules: RuleDefinition[];
@@ -103,30 +104,42 @@ export default function RuleTester({ rules, defaultSelectedRuleId }: RuleTesterP
                 <TabsTrigger value="code" disabled={!selectedRuleId}>Generated C# Code</TabsTrigger>
               </TabsList>
               <TabsContent value="input">
-                <Textarea 
-                  className="font-mono text-sm min-h-[300px]" 
-                  value={inputJson}
-                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setInputJson(e.target.value)}
-                />
+                <div className="pt-2">
+                  <CodeEditor 
+                    language="json" 
+                    value={inputJson} 
+                    onChange={(val) => setInputJson(val || '')} 
+                    height="350px"
+                  />
+                </div>
               </TabsContent>
               <TabsContent value="code">
-                <div className="bg-muted p-4 rounded-md text-xs font-mono overflow-auto min-h-[300px] max-h-[300px]">
+                <div className="pt-2">
                   {codeLoading ? (
-                    <div className="text-muted-foreground">Loading code...</div>
+                    <div className="text-muted-foreground p-4 bg-muted rounded-md text-sm">Loading code...</div>
                   ) : generatedCode ? (
                     <div className="space-y-4">
                       <div>
-                        <div className="font-semibold text-muted-foreground mb-1">Predicate (bool):</div>
-                        <pre className="whitespace-pre-wrap">{generatedCode.Predicate}</pre>
+                        <div className="font-semibold text-muted-foreground mb-1 text-sm">Predicate (bool):</div>
+                        <CodeEditor 
+                          language="csharp" 
+                          value={generatedCode.Predicate} 
+                          readOnly 
+                          height="150px" 
+                        />
                       </div>
-                      <hr className="border-border" />
                       <div>
-                        <div className="font-semibold text-muted-foreground mb-1">Result (object):</div>
-                        <pre className="whitespace-pre-wrap">{generatedCode.Result}</pre>
+                        <div className="font-semibold text-muted-foreground mb-1 text-sm">Result (object):</div>
+                        <CodeEditor 
+                          language="csharp" 
+                          value={generatedCode.Result} 
+                          readOnly 
+                          height="150px" 
+                        />
                       </div>
                     </div>
                   ) : (
-                    <div className="text-muted-foreground">Select a rule to view its generated C# code.</div>
+                    <div className="text-muted-foreground p-4 bg-muted rounded-md text-sm">Select a rule to view its generated C# code.</div>
                   )}
                 </div>
               </TabsContent>
@@ -148,10 +161,13 @@ export default function RuleTester({ rules, defaultSelectedRuleId }: RuleTesterP
       {result && (
         <div className="space-y-2 mt-4">
           <Label>Evaluation Result</Label>
-          <div className="p-4 bg-muted rounded-md overflow-auto max-h-64">
-            <pre className="text-xs font-mono">
-              {JSON.stringify(result, null, 2)}
-            </pre>
+          <div className="pt-2">
+            <CodeEditor 
+              language="json" 
+              value={JSON.stringify(result, null, 2)} 
+              readOnly 
+              height="200px" 
+            />
           </div>
         </div>
       )}
