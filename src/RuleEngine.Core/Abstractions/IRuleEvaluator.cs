@@ -23,4 +23,11 @@ public interface IRuleEvaluator
     /// <param name="input">Sample input for validation</param>
     /// <returns>Validation result</returns>
     Task<ValidationResult> ValidateAsync(RuleDefinition rule, object input);
+
+    /// <summary>
+    /// Gets the generated C# source code for the rule
+    /// </summary>
+    /// <param name="rule">Rule definition</param>
+    /// <returns>Dictionary of component names (e.g. Predicate, Result) and their generated C# code</returns>
+    Task<Dictionary<string, string>> GetGeneratedCodeAsync(RuleDefinition rule);
 }

@@ -21,9 +21,7 @@
     <ProjectReference Include="..\..\..\src\RuleEngine.Core\RuleEngine.Core.csproj" />
 
     <ProjectReference Include="..\..\..\src\CampaignEngine.Core\CampaignEngine.Core.csproj" />
-    <ProjectReference Include="..\ruleenginedemovue.client\ruleenginedemovue.client.esproj">
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
+
   </ItemGroup>
 
 </Project>
