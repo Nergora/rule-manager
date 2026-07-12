@@ -10,11 +10,11 @@ namespace RuleEngineDemoVue.Server.Controllers;
 [Route("api/[controller]")]
 public class CampaignController : ControllerBase
 {
-    private readonly InMemoryCampaignRepository _repository;
+    private readonly ICampaignRepository _repository;
     private readonly CampaignEngine.Core.CampaignManager<CampaignRuleInput, CampaignOutput> _campaignManager;
 
     public CampaignController(
-        InMemoryCampaignRepository repository,
+        ICampaignRepository repository,
         CampaignEngine.Core.CampaignManager<CampaignRuleInput, CampaignOutput> campaignManager)
     {
         _repository = repository;

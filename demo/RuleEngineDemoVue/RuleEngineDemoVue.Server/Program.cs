@@ -13,6 +13,9 @@ using RuleEngine.Core.Rule.DesignTime.Parameters;
 using RuleEngine.Core.Repositories;
 using RuleEngineDemoVue.Server.Models;
 using RuleEngineDemoVue.Server.Services;
+using Microsoft.EntityFrameworkCore;
+using RuleEngineDemoVue.Server.Data;
+using RuleEngineDemoVue.Server.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,8 +23,11 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddMemoryCache();
 
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlite("Data Source=app.db"));
+
 builder.Services.AddRuleEngine();
-builder.Services.AddSingleton<IRuleRepository, InMemoryRuleRepository>();
+builder.Services.AddScoped<IRuleRepository, EfRuleRepository>();
 builder.Services.AddSingleton<IAuditRepository, InMemoryAuditRepository>();
 builder.Services.AddRuleEngineDesignTime();
 builder.Services.AddSingleton<IRuleEvaluator, DemoRuleEvaluator>();
@@ -29,7 +35,8 @@ builder.Services.AddScoped<IRuleEngine, DemoRuleEngine>();
 builder.Services.AddScoped<IRuleManager, RuleManager>();
 
 builder.Services.AddCampaignEngine();
-builder.Services.AddSingleton(sp =>
+builder.Services.AddScoped<ICampaignRepository, EfCampaignRepository>();
+builder.Services.AddScoped(sp =>
     new CampaignEngine.Core.CampaignManager<CampaignRuleInput, CampaignOutput>(
         moduleId: 1,
         serviceProvider: sp,
@@ -40,24 +47,27 @@ var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
-
+    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    context.Database.EnsureCreated();
 
     var ruleRepository = scope.ServiceProvider.GetRequiredService<IRuleRepository>();
-
-    var ruleSeed = BuildDemoRuleSeed();
-    foreach (var rule in ruleSeed)
+    if (!context.Rules.Any())
     {
-        var created = await ruleRepository.CreateAsync(rule);
-        await ruleRepository.ActivateVersionAsync(created.Id, 1);
-        await ruleRepository.UpdateAsync(created.Id, new UpdateRuleRequest { Status = RuleStatus.Active });
+        var ruleSeed = BuildDemoRuleSeed();
+        foreach (var rule in ruleSeed)
+        {
+            var created = await ruleRepository.CreateAsync(rule);
+            await ruleRepository.ActivateVersionAsync(created.Id, 1);
+            await ruleRepository.UpdateAsync(created.Id, new UpdateRuleRequest { Status = RuleStatus.Active });
+        }
     }
 
-    var campaignRepository = scope.ServiceProvider.GetRequiredService<ICampaignRepository>();
-    if (campaignRepository is InMemoryCampaignRepository memoryRepo)
+    if (!context.Campaigns.Any())
     {
+        var campaignRepository = scope.ServiceProvider.GetRequiredService<ICampaignRepository>();
         foreach (var campaign in CampaignSeed.BuildDemoCampaigns(moduleId: 1))
         {
-            memoryRepo.AddCampaign(campaign);
+            campaignRepository.AddCampaign(campaign);
         }
     }
 }
