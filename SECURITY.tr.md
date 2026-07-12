@@ -65,7 +65,7 @@ var rule = await compiler.CompileAsync("safe-rule", ruleString, cts.Token);
 ```csharp
 // Örnek: Güvenli connection string yapılandırması
 builder.Services.AddRuleEngine()
-    .AddSqlite(builder.Configuration.GetConnectionString("DefaultConnection"));
+    .AddDbContext<ApplicationDbContext>(options => options.UseInMemoryDatabase("DefaultConnection"));
 ```
 
 #### API Güvenliği

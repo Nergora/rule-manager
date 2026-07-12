@@ -9,7 +9,7 @@ Format, [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) temeline dayani
 ### Eklendi
 - RuleEngine ilk surumu
 - Core kural derleme ve calistirma motoru
-- SQLite kalicilik katmani
+- kalicilik katmani
 - ASP.NET Core MVC ornek uygulamasi
 - KnockoutJS kural builder arayuzu
 - Kapsamli test paketi
@@ -25,7 +25,6 @@ Format, [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) temeline dayani
   - Tum islemler icin async/await destegi
   - Tip-guvenli generic input/output modelleri
 
-- **SQLite Persistence**
   - Kural CRUD islemleri icin `IRuleRepository`
   - Calistirma audit kayitlari icin `IAuditRepository`
   - Entity Framework Core entegrasyonu
@@ -52,7 +51,7 @@ Format, [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) temeline dayani
 
 - **Testing**
   - Kapsamli unit test paketi
-  - SQLite ile integration testleri
+  - veritabani ile integration testleri
   - xUnit ve FluentAssertions
   - Core fonksiyonlar icin test coverage
   - Repository’ler icin mock tabanli testler
@@ -68,7 +67,6 @@ Format, [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) temeline dayani
 - **Hedef Framework**: .NET 8.0
 - **Bagimliliklar**:
   - Microsoft.CodeAnalysis.CSharp.Scripting 4.8.0
-  - Microsoft.EntityFrameworkCore.Sqlite 8.0.0
   - Microsoft.Extensions.DependencyInjection 8.0.0
 - **Performans**:
   - Kural derleme: ~50-100ms
@@ -76,7 +74,7 @@ Format, [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) temeline dayani
   - Thread-safe es zamanli calistirma
 - **Ozellikler**:
   - Roslyn tabanli C# derleme
-  - EF Core ile SQLite veritabani
+  - EF Core ile veritabani
   - RESTful API endpointleri
   - Gercek zamanli kural dogrulama
   - Kapsamli hata yonetimi
@@ -90,7 +88,6 @@ Format, [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) temeline dayani
 
 ### NuGet Paketleri
 - `RuleEngine.Core` - Core kural motoru
-- `RuleEngine.Sqlite` - SQLite kalicilik katmani
 
 ---
 
@@ -99,7 +96,7 @@ Format, [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) temeline dayani
 ### 1.0.0 (2025-09-22)
 - Ilk surum
 - Tam kural motoru implementasyonu
-- SQLite kalicilik
+- kalicilik
 - MVC ornek uygulamasi
 - Kapsamli dokumantasyon
 
@@ -114,14 +111,14 @@ RuleEngine, eski bir kural motorunun .NET 8 ile yeniden yazilmis halidir:
 1. **Static RuleManager**: Uyumluluk icin static yapisi korunur
 2. **RuleCompiler**: Daha iyi hata yonetimi ve async destek
 3. **RuleSet**: Tip guvenligi ve performans iyilestirmeleri
-4. **Persistence**: EF Core ile SQLite destegi
+4. **Persistence**: EF Core ile veritabani destegi
 5. **UI**: KnockoutJS arayuzu modernleştirildi
 
 ### Kiran Degisiklikler
 - 1.0.0 icin yok (yeni proje)
 
 ### Yeni Ozellikler
-- SQLite kalicilik katmani
+- kalicilik katmani
 - ASP.NET Core MVC entegrasyonu
 - Gelismis hata yonetimi
 - Daha iyi performans

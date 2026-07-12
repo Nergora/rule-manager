@@ -1,4 +1,4 @@
-namespace RuleEngineDemoVue.Server;
+namespace RuleEngineDemo.Server;
 
 public class WeatherForecast
 {

@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using RuleEngine.Core.Abstractions;
 using RuleEngine.Core.Models;
 
-namespace RuleEngineDemoVue.Server.Services;
+namespace RuleEngineDemo.Server.Services;
 
 public sealed class DemoRuleEngine : IRuleEngine
 {

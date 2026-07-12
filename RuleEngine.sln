@@ -21,9 +21,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CampaignEngine.Core.Tests",
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "demo", "demo", "{2037762A-7440-43B2-8532-AC9676AE9CBD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RuleEngineDemoVue.Server", "demo\RuleEngineDemoVue\RuleEngineDemoVue.Server\RuleEngineDemoVue.Server.csproj", "{005D53ED-C4E9-4409-8179-E29FD2D4300F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RuleEngineDemo.Server", "demo\RuleEngineDemo\RuleEngineDemo.Server\RuleEngineDemo.Server.csproj", "{005D53ED-C4E9-4409-8179-E29FD2D4300F}"
 EndProject
-Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "ruleenginedemovue.client", "demo\RuleEngineDemoVue\ruleenginedemovue.client\ruleenginedemovue.client.esproj", "{B8759790-6051-407D-A9E4-59AEC7956993}"
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "ruleenginedemo.client", "demo\RuleEngineDemo\ruleenginedemo.client\ruleenginedemo.client.esproj", "{B8759790-6051-407D-A9E4-59AEC7956993}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RuleEngine.Demo", "demo\RuleEngine.Demo\RuleEngine.Demo.csproj", "{98AEA6C0-9A9B-4456-B373-2B7BDBABB406}"
 EndProject

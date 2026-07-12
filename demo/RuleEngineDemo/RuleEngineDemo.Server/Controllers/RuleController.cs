@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
 using RuleEngine.Core.Abstractions;
 using RuleEngine.Core.Models;
-using RuleEngineDemoVue.Server.Models;
-using RuleEngineDemoVue.Server.Services;
+using RuleEngineDemo.Server.Models;
+using RuleEngineDemo.Server.Services;
 
-namespace RuleEngineDemoVue.Server.Controllers;
+namespace RuleEngineDemo.Server.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -77,7 +77,7 @@ public class RuleController : ControllerBase
     }
 
     [HttpGet("versions/{ruleId}")]
-    public async Task<IActionResult> GetVersions(string ruleId, [FromServices] RuleEngineDemoVue.Server.Data.AppDbContext dbContext)
+    public async Task<IActionResult> GetVersions(string ruleId, [FromServices] RuleEngineDemo.Server.Data.AppDbContext dbContext)
     {
         var versions = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync(
             System.Linq.Queryable.OrderByDescending(

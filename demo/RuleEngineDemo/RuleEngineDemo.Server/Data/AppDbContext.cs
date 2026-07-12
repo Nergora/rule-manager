@@ -2,9 +2,9 @@ using System.Text.Json;
 using CampaignEngine.Core.Models;
 using Microsoft.EntityFrameworkCore;
 using RuleEngine.Core.Models;
-using RuleEngineDemoVue.Server.Models;
+using RuleEngineDemo.Server.Models;
 
-namespace RuleEngineDemoVue.Server.Data;
+namespace RuleEngineDemo.Server.Data;
 
 public class AppDbContext : DbContext
 {

@@ -39,7 +39,6 @@ Thank you for your interest in contributing to RuleEngine! This document provide
 RuleEngine/
 ├── src/
 │   ├── RuleEngine.Core/          # Core rule engine functionality
-│   ├── RuleEngine.Sqlite/        # SQLite persistence layer
 │   └── RuleEngine.Mvc/           # Sample MVC application
 ├── tests/
 │   ├── RuleEngine.Core.Tests/    # Unit tests for core functionality

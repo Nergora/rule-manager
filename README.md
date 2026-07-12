@@ -5,7 +5,7 @@
 [![NuGet](https://img.shields.io/nuget/v/Nergora.RuleEngine.Core.svg)](https://www.nuget.org/packages/Nergora.RuleEngine.Core/)
 [![NuGet](https://img.shields.io/nuget/v/Nergora.CampaignEngine.Core.svg)](https://www.nuget.org/packages/Nergora.CampaignEngine.Core/)
 
-Modern, extensible, and high-performance rule engine and campaign management system. Create dynamic business rules with Roslyn-based C# expression evaluation, persist with SQLite or custom repositories, and build campaign systems.
+Modern, extensible, and high-performance rule engine and campaign management system. Create dynamic business rules with Roslyn-based C# expression evaluation, persist with custom repositories, and build campaign systems.
 
 ## 🌟 Why RuleEngine?
 
@@ -490,9 +490,6 @@ public class CampaignManagerTests
 # RuleEngine.Core
 dotnet add package Nergora.RuleEngine.Core --version 1.1.18
 
-# RuleEngine.Sqlite
-dotnet add package Nergora.RuleEngine.Sqlite --version 1.1.18
-
 # CampaignEngine.Core
 dotnet add package Nergora.CampaignEngine.Core --version 1.1.18
 ```
@@ -502,13 +499,12 @@ dotnet add package Nergora.CampaignEngine.Core --version 1.1.18
 | Package | Version | .NET Support | Download |
 |---------|---------|--------------|----------|
 | Nergora.RuleEngine.Core | 1.1.18 | 8.0, 9.0, 10.0 | [![NuGet](https://img.shields.io/nuget/v/Nergora.RuleEngine.Core.svg)](https://www.nuget.org/packages/Nergora.RuleEngine.Core/) |
-| Nergora.RuleEngine.Sqlite | 1.1.18 | 8.0, 9.0, 10.0 | [![NuGet](https://img.shields.io/nuget/v/Nergora.RuleEngine.Sqlite.svg)](https://www.nuget.org/packages/Nergora.RuleEngine.Sqlite/) |
 | Nergora.CampaignEngine.Core | 1.1.18 | 8.0, 9.0, 10.0 | [![NuGet](https://img.shields.io/nuget/v/Nergora.CampaignEngine.Core.svg)](https://www.nuget.org/packages/Nergora.CampaignEngine.Core/) |
 
 ### Recent NuGet Updates
 
 - `Nergora.RuleEngine.Core`: design-time metadata catalog, RuleManager/IRuleProvider flow, DEBUG_RULES PDB support
-- `Nergora.RuleEngine.Sqlite`: System.Text.Json persistence for rule metadata/parameters, design-time metadata integration
+- ``: System.Text.Json persistence for rule metadata/parameters, design-time metadata integration
 - `Nergora.CampaignEngine.Core`: available campaign resolution, basket apply/remove helpers, demo seed helper
 
 ## 🔧 Advanced Usage

@@ -2,9 +2,9 @@ using Microsoft.Extensions.Caching.Memory;
 using RuleEngine.Core.Abstractions;
 using RuleEngine.Core.Models;
 using RuleEngine.Core.Rule;
-using RuleEngineDemoVue.Server.Models;
+using RuleEngineDemo.Server.Models;
 
-namespace RuleEngineDemoVue.Server.Services;
+namespace RuleEngineDemo.Server.Services;
 
 public sealed class DemoRuleEvaluator : IRuleEvaluator
 {

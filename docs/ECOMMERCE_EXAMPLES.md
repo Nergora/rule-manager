@@ -22,7 +22,6 @@ Bu dokümantasyon, RuleEngine kütüphanesini e-ticaret sistemlerinde nasıl kul
 
 ```bash
 dotnet add package Nergora.RuleEngine.Core
-dotnet add package Nergora.RuleEngine.Sqlite
 ```
 
 ### 2. Temel Modelleri Oluşturun

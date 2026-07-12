@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using RuleEngine.Core.Abstractions;
 using RuleEngine.Core.Models;
-using RuleEngineDemoVue.Server.Data;
+using RuleEngineDemo.Server.Data;
 
-namespace RuleEngineDemoVue.Server.Repositories;
+namespace RuleEngineDemo.Server.Repositories;
 
 public class EfRuleRepository : IRuleRepository
 {
@@ -86,7 +86,7 @@ public class EfRuleRepository : IRuleRepository
             throw new KeyNotFoundException($"Rule {ruleId} not found");
 
         // Save current state as a historical snapshot
-        var snapshot = new RuleEngineDemoVue.Server.Models.RuleVersionSnapshot
+        var snapshot = new RuleEngineDemo.Server.Models.RuleVersionSnapshot
         {
             RuleId = existing.Id,
             Version = existing.Version,

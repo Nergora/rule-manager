@@ -1,7 +1,7 @@
 using CampaignEngine.Core.Abstractions;
 using CampaignEngine.Core.Models;
 
-namespace RuleEngineDemoVue.Server.Models;
+namespace RuleEngineDemo.Server.Models;
 
 public class DemoTravelProduct : ITravelProduct
 {

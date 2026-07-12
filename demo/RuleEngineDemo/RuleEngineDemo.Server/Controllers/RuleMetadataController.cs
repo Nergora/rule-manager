@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using RuleEngine.Core.Rule.DesignTime;
 using RuleEngine.Core.Rule.DesignTime.Parameters;
 
-namespace RuleEngineDemoVue.Server.Controllers;
+namespace RuleEngineDemo.Server.Controllers;
 
 [ApiController]
 [Route("api/rule-metadata")]

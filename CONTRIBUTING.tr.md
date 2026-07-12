@@ -39,7 +39,6 @@ RuleEngine'e katki saglamak istediginiz icin tesekkurler! Bu belge, katilimcilar
 RuleEngine/
 ├── src/
 │   ├── RuleEngine.Core/          # Core kural motoru
-│   ├── RuleEngine.Sqlite/        # SQLite kalicilik katmani
 │   └── RuleEngine.Mvc/           # MVC ornek uygulama
 ├── tests/
 │   ├── RuleEngine.Core.Tests/    # Core unit testleri

@@ -17,7 +17,6 @@ This documentation shows how to use the RuleEngine library in e-commerce systems
 
 ```bash
 dotnet add package Nergora.RuleEngine.Core
-dotnet add package Nergora.RuleEngine.Sqlite
 ```
 
 ### 2. Create Basic Models

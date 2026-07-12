@@ -7,7 +7,6 @@ RuleEngine paket ailesi birden fazla NuGet paketi olarak yayinlanir. Her paket .
 | Paket | Amac | NuGet |
 | --- | --- | --- |
 | `Nergora.RuleEngine.Core` | Kural motoru cekirdegi | https://www.nuget.org/packages/Nergora.RuleEngine.Core/ |
-| `Nergora.RuleEngine.Sqlite` | SQLite kalicilik ve audit | https://www.nuget.org/packages/Nergora.RuleEngine.Sqlite/ |
 | `Nergora.CampaignEngine.Core` | Kampanya motoru | https://www.nuget.org/packages/Nergora.CampaignEngine.Core/ |
 
 ## Surum ve Uyumluluk
@@ -27,7 +26,7 @@ RuleEngine paket ailesi birden fazla NuGet paketi olarak yayinlanir. Her paket .
 ## Paket Secim Rehberi
 
 - Sadece in-memory kural calistirma: `Nergora.RuleEngine.Core`
-- SQLite ile kalicilik ve audit: `Nergora.RuleEngine.Sqlite`
+
 - Kampanya kurallari: `Nergora.CampaignEngine.Core`
 
 Tum ozellikler: [features](features)

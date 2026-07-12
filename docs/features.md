@@ -21,16 +21,6 @@ Bu sayfa, paketlerin sundugu tum ozellikleri tek yerde toplar.
 - DEBUG_RULES ile PDB cikisi (debug)
 - Rule execution sonuc modeli (RuleExecutionResult)
 
-## RuleEngine.Sqlite
-
-- EF Core tabanli kalicilik
-- Rule / RuleVersion / RuleParameter tabloları
-- Rule execution audit logging
-- Version activation ve rollback destekleri
-- Parameter serilestirme (System.Text.Json)
-- Migration ve seeding akisi
-- IRuleRepository ve IAuditRepository implementasyonlari
-
 ## CampaignEngine.Core
 
 - RuleEngine.Core uzerine kampanya katmani

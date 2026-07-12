@@ -1,8 +1,8 @@
 using CampaignEngine.Core.Abstractions;
 using CampaignEngine.Core.Models;
-using RuleEngineDemoVue.Server.Data;
+using RuleEngineDemo.Server.Data;
 
-namespace RuleEngineDemoVue.Server.Repositories;
+namespace RuleEngineDemo.Server.Repositories;
 
 public class EfCampaignRepository : ICampaignRepository
 {
@@ -79,7 +79,7 @@ public class EfCampaignRepository : ICampaignRepository
 
     public void RecordUsage(int campaignId, string? orderId = null, string? customerId = null)
     {
-        var usage = new RuleEngineDemoVue.Server.Models.CampaignUsage
+        var usage = new RuleEngineDemo.Server.Models.CampaignUsage
         {
             CampaignId = campaignId,
             UsedAt = DateTime.UtcNow,

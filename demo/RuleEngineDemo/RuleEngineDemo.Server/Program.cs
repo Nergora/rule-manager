@@ -11,11 +11,11 @@ using RuleEngine.Core.Models;
 using RuleEngine.Core.Rule.DesignTime;
 using RuleEngine.Core.Rule.DesignTime.Parameters;
 using RuleEngine.Core.Repositories;
-using RuleEngineDemoVue.Server.Models;
-using RuleEngineDemoVue.Server.Services;
+using RuleEngineDemo.Server.Models;
+using RuleEngineDemo.Server.Services;
 using Microsoft.EntityFrameworkCore;
-using RuleEngineDemoVue.Server.Data;
-using RuleEngineDemoVue.Server.Repositories;
+using RuleEngineDemo.Server.Data;
+using RuleEngineDemo.Server.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 

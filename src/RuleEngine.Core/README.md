@@ -25,7 +25,6 @@ dotnet add package Nergora.RuleEngine.Core
 
 ```csharp
 using RuleEngine.Core.Extensions;
-using RuleEngine.Sqlite.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,8 +32,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRuleEngine();
 builder.Services.AddRuleEngineDesignTime();
 
-// Add RuleEngine with SQLite persistence (optional)
-builder.Services.AddRuleEngineWithSqlite("Data Source=ruleengine.db");
+// Add RuleEngine
 
 var app = builder.Build();
 ```
@@ -172,7 +170,7 @@ foreach (var audit in history)
 
 ## Database Schema
 
-The SQLite database contains the following tables:
+The database contains the following tables:
 
 - **Rules**: Rule metadata (name, description, status, tags)
 - **RuleVersions**: Rule content and versioning information
@@ -185,10 +183,10 @@ The SQLite database contains the following tables:
 
 ```bash
 # Create migration
-dotnet ef migrations add InitialCreate --project RuleEngine.Sqlite --startup-project YourApp
+dotnet ef migrations add InitialCreate --project  --startup-project YourApp
 
 # Update database
-dotnet ef database update --project RuleEngine.Sqlite --startup-project YourApp
+dotnet ef database update --project  --startup-project YourApp
 ```
 
 ### Seeding Sample Data
@@ -319,7 +317,7 @@ public class JavaScriptRuleEvaluator : IRuleEvaluator
 }
 
 // Register custom evaluator
-services.AddRuleEngineWithSqlite<JavaScriptRuleEvaluator>("Data Source=ruleengine.db");
+
 ```
 
 ## Performance Considerations

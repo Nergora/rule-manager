@@ -2,9 +2,9 @@ using Microsoft.AspNetCore.Mvc;
 using CampaignEngine.Core.Abstractions;
 using CampaignEngine.Core.Models;
 using CampaignEngine.Core.Repositories;
-using RuleEngineDemoVue.Server.Models;
+using RuleEngineDemo.Server.Models;
 
-namespace RuleEngineDemoVue.Server.Controllers;
+namespace RuleEngineDemo.Server.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]

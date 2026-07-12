@@ -1,6 +1,6 @@
 using RuleEngine.Core.Models;
 
-namespace RuleEngineDemoVue.Server.Models;
+namespace RuleEngineDemo.Server.Models;
 
 public class RuleVersionSnapshot
 {

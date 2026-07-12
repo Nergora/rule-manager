@@ -61,7 +61,6 @@ pipeline {
               fi
 
               dotnet pack src/RuleEngine.Core/RuleEngine.Core.csproj -c Release --no-build -o artifacts ${VERSION_ARG}
-              dotnet pack src/RuleEngine.Sqlite/RuleEngine.Sqlite.csproj -c Release --no-build -o artifacts ${VERSION_ARG}
               dotnet pack src/CampaignEngine.Core/CampaignEngine.Core.csproj -c Release --no-build -o artifacts ${VERSION_ARG}
             '''
         }
@@ -73,7 +72,7 @@ pipeline {
             container('dotnet-sdk') {
               echo 'Uygulama yayınlanmaya hazırlanıyor (Server + Vue)...'
               // Bu komut hem server'ı derler hem de client buildlerini içine alır
-              sh 'dotnet publish demo/RuleEngineDemoVue/RuleEngineDemoVue.Server/RuleEngineDemoVue.Server.csproj -c Release -o ./publish_output'
+              sh 'dotnet publish demo/RuleEngineDemo/RuleEngineDemo.Server/RuleEngineDemo.Server.csproj -c Release -o ./publish_output'
             }
           }
         }
@@ -85,7 +84,6 @@ pipeline {
           
           // Sadece kütüphane olan projeleri paketliyoruz
           sh 'dotnet pack src/RuleEngine.Core/RuleEngine.Core.csproj -c Release -o artifacts'
-          sh 'dotnet pack src/RuleEngine.Sqlite/RuleEngine.Sqlite.csproj -c Release -o artifacts'
           sh 'dotnet pack src/CampaignEngine.Core/CampaignEngine.Core.csproj -c Release -o artifacts'
         }
       }

@@ -1,4 +1,4 @@
-namespace RuleEngineDemoVue.Server.Models;
+namespace RuleEngineDemo.Server.Models;
 
 public class CampaignUsage
 {
