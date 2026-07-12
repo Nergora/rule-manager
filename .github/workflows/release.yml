@@ -39,7 +39,11 @@ jobs:
 
           CURRENT_VERSION=$(grep -o '<Version>[^<]*</Version>' "${PROJECTS[0]}" | sed 's/<Version>\(.*\)<\/Version>/\1/')
           IFS='.' read -ra VERSION_PARTS <<< "$CURRENT_VERSION"
-          NEW_VERSION="${VERSION_PARTS[0]}.${VERSION_PARTS[1]}.$((VERSION_PARTS[2] + 1))"
+          if [[ "$CURRENT_VERSION" == 0.* ]]; then
+            NEW_VERSION="1.0.0"
+          else
+            NEW_VERSION="${VERSION_PARTS[0]}.${VERSION_PARTS[1]}.$((VERSION_PARTS[2] + 1))"
+          fi
 
           for PROJECT in "${PROJECTS[@]}"; do
             sed -i "s|<Version>$CURRENT_VERSION</Version>|<Version>$NEW_VERSION</Version>|g" "$PROJECT"
