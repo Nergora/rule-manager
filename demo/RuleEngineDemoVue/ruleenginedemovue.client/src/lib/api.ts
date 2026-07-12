@@ -145,5 +145,88 @@ export const api = {
         });
         if (!res.ok) throw new Error('Failed to evaluate rule');
         return res.json();
+    }
+};
+
+// Campaign API
+
+export interface GeneralCampaign {
+    id: number;
+    code: string;
+    name: string;
+    description: string;
+    startDate: string;
+    endDate: string;
+    priority: number;
+    predicate: string;
+    result: string;
+    usage: string;
+    campaignTypes: number;
+    createDate: string;
+    modulId: number;
+    promotionCode?: string;
+    quota?: number;
+}
+
+export interface CampaignRuleInput {
+    totalAmount: number;
+    customerType: string;
+    orderCount: number;
+    productCount: number;
+    orderTime: string; // ISO DateTime
+    city: string;
+    category: string;
+    usageCount: number;
+}
+
+export interface CampaignOutput {
+    totalDiscount: string; // Serialized Price struct e.g., "100 TRY"
+    campaignProductDiscount?: {
+        productKey: string;
+        discountAmount: string;
+        discountPercentage: number;
+        discountType: string;
+    };
+}
+
+export const campaignApi = {
+    async getAllCampaigns(moduleId: number = 1): Promise<GeneralCampaign[]> {
+        const res = await fetch(`/api/Campaign?moduleId=${moduleId}`);
+        if (!res.ok) throw new Error('Failed to fetch campaigns');
+        return res.json();
     },
+
+    async evaluateCampaigns(input: CampaignRuleInput): Promise<CampaignOutput[]> {
+        const res = await fetch('/api/Campaign/evaluate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ input })
+        });
+        if (!res.ok) throw new Error('Failed to evaluate campaigns');
+        return res.json();
+    },
+
+    async createCampaign(campaign: Partial<GeneralCampaign>): Promise<GeneralCampaign> {
+        const res = await fetch('/api/Campaign', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(campaign)
+        });
+        if (!res.ok) throw new Error('Failed to create campaign');
+        return res.json();
+    },
+
+    async updateCampaign(id: number, campaign: GeneralCampaign): Promise<void> {
+        const res = await fetch(`/api/Campaign/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(campaign)
+        });
+        if (!res.ok) throw new Error('Failed to update campaign');
+    },
+
+    async deleteCampaign(id: number): Promise<void> {
+        const res = await fetch(`/api/Campaign/${id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Failed to delete campaign');
+    }
 };
