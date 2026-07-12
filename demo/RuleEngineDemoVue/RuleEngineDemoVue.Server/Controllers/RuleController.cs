@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using RuleEngine.Core.Abstractions;
 using RuleEngine.Core.Models;
 using RuleEngineDemoVue.Server.Models;
+using RuleEngineDemoVue.Server.Services;
 
 namespace RuleEngineDemoVue.Server.Controllers;
 
@@ -114,6 +115,22 @@ public class RuleController : ControllerBase
     {
         var history = await _auditRepository.GetExecutionHistoryAsync(ruleId, limit);
         return Ok(history);
+    }
+
+    [HttpGet("{ruleId}/code")]
+    public async Task<ActionResult<Dictionary<string, string>>> GetCode(string ruleId)
+    {
+        var rule = await _ruleRepository.GetActiveVersionAsync(ruleId);
+        if (rule == null)
+            return NotFound();
+
+        if (_ruleEvaluator is DemoRuleEvaluator demoEvaluator)
+        {
+            var code = await demoEvaluator.GetGeneratedCodeAsync(rule);
+            return Ok(code);
+        }
+
+        return BadRequest("The current evaluator does not support exposing generated code.");
     }
 }
 

@@ -94,6 +94,12 @@ export const api = {
         return res.json();
     },
 
+    async getRuleCode(ruleId: string): Promise<{ Predicate: string; Result: string }> {
+        const res = await fetch(`/api/Rule/${ruleId}/code`);
+        if (!res.ok) throw new Error('Failed to fetch rule code');
+        return res.json();
+    },
+
     async getAllRules(): Promise<RuleDefinition[]> {
         const res = await fetch('/api/Rule');
         if (!res.ok) throw new Error('Failed to fetch rules');
