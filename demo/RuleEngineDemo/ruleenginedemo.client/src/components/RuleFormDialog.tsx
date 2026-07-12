@@ -86,7 +86,7 @@ export default function RuleFormDialog({ open, onOpenChange, rule, onSave }: Rul
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle>{rule ? 'Edit Rule' : 'Create Rule'}</DialogTitle>
           <DialogDescription>
