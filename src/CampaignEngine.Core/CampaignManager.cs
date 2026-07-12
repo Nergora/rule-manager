@@ -1,7 +1,13 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using CampaignEngine.Core.Abstractions;
 using CampaignEngine.Core.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using RuleEngine.Core.Abstractions;
 using RuleEngine.Core.Rule;
 using RuleEngine.Core.Models;
 
@@ -19,15 +25,16 @@ public class CampaignManager<TCampaignRuleInput, TCampaignRuleOutput>
 
     public CampaignManager(int moduleId, IServiceProvider serviceProvider, ILogger<CampaignManager<TCampaignRuleInput, TCampaignRuleOutput>> logger, params Type[] extraType)
     {
-        if (serviceProvider == null)
-            throw new ArgumentNullException(nameof(serviceProvider));
-        if (logger == null)
-            throw new ArgumentNullException(nameof(logger));
+        ArgumentNullException.ThrowIfNull(serviceProvider);
+        ArgumentNullException.ThrowIfNull(logger);
 
         _moduleId = moduleId;
         _logger = logger;
         var extraTypes = extraType?.Where(t => t != null).ToArray() ?? Array.Empty<Type>();
-        _ruleProvider = new CampaignRuleProvider(_moduleId, serviceProvider, extraTypes);
+        
+        var ruleCache = serviceProvider.GetService<IRuleCompilerCache>();
+        
+        _ruleProvider = new CampaignRuleProvider(_moduleId, serviceProvider, ruleCache, extraTypes);
         _ruleProvider.WaitInitialization();
     }
 
@@ -39,33 +46,39 @@ public class CampaignManager<TCampaignRuleInput, TCampaignRuleOutput>
         private readonly RuleCompiler<TCampaignRuleInput, bool> _usageRuleCompiler;
         private readonly RuleCompiler<TCampaignRuleInput, TCampaignRuleOutput> _resultRuleCompiler;
 
-        public CampaignRuleProvider(int moduleId, IServiceProvider serviceProvider, params Type[] extraType)
+        public CampaignRuleProvider(int moduleId, IServiceProvider serviceProvider, IRuleCompilerCache? cache, params Type[] extraType)
         {
+            ArgumentNullException.ThrowIfNull(serviceProvider);
+            
             _moduleId = moduleId;
             _extraType = extraType ?? Array.Empty<Type>();
-            _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-            _usageRuleCompiler = new RuleCompiler<TCampaignRuleInput, bool>(_extraType);
-            _resultRuleCompiler = new RuleCompiler<TCampaignRuleInput, TCampaignRuleOutput>(_extraType);
+            _serviceProvider = serviceProvider;
+            _usageRuleCompiler = new RuleCompiler<TCampaignRuleInput, bool>(_extraType, useExpressionTreeTemplate: true, cache: cache);
+            _resultRuleCompiler = new RuleCompiler<TCampaignRuleInput, TCampaignRuleOutput>(_extraType, useExpressionTreeTemplate: false, cache: cache);
         }
 
         public IServiceProvider ServiceProvider => _serviceProvider;
 
-        public async Task<IDictionary<string, CampaignRuleSet>> GenerateRuleSetsAsync(DateTime after)
+        public async Task<IDictionary<string, CampaignRuleSet>> GenerateRuleSetsAsync(DateTime after, CancellationToken cancellationToken = default)
         {
             var repo = _serviceProvider.GetRequiredService<ICampaignRepository>();
             var ruleEntities = repo.GetCampaigns(after, _moduleId);
             var result = new Dictionary<string, CampaignRuleSet>();
+            var ruleCache = _serviceProvider.GetService<IRuleCompilerCache>();
 
             foreach (var ruleEntity in ruleEntities)
             {
+                if (cancellationToken.IsCancellationRequested)
+                    break;
+                    
                 try
                 {
-                    var predicateCompiler = new RuleCompiler<TCampaignRuleInput, bool>(_extraType);
-                    var resultCompiler = new RuleCompiler<TCampaignRuleInput, TCampaignRuleOutput>(_extraType, useExpressionTreeTemplate: false);
+                    var predicateCompiler = new RuleCompiler<TCampaignRuleInput, bool>(_extraType, useExpressionTreeTemplate: true, cache: ruleCache);
+                    var resultCompiler = new RuleCompiler<TCampaignRuleInput, TCampaignRuleOutput>(_extraType, useExpressionTreeTemplate: false, cache: ruleCache);
                         
-                    var predicateRule = await predicateCompiler.CompileAsync(ruleEntity.Code, ruleEntity.Predicate);
-                    var resultRule = await resultCompiler.CompileAsync(ruleEntity.Code, ruleEntity.Result);
-                    var usageRule = await _usageRuleCompiler.CompileAsync(ruleEntity.Code, ruleEntity.Usage ?? "true");
+                    var predicateRule = await predicateCompiler.CompileAsync(ruleEntity.Code, ruleEntity.Predicate, cancellationToken);
+                    var resultRule = await resultCompiler.CompileAsync(ruleEntity.Code, ruleEntity.Result, cancellationToken);
+                    var usageRule = await _usageRuleCompiler.CompileAsync(ruleEntity.Code, ruleEntity.Usage ?? "true", cancellationToken);
                         
                     var ruleSet = RuleSet.Create<CampaignRuleSet, TCampaignRuleInput, TCampaignRuleOutput>(
                         ruleEntity.Code,
@@ -100,10 +113,9 @@ public class CampaignManager<TCampaignRuleInput, TCampaignRuleOutput>
             return result;
         }
 
-        public async Task<IDictionary<string, bool>> IsExistsAsync(params string[] keys)
+        public async Task<IDictionary<string, bool>> IsExistsAsync(CancellationToken cancellationToken = default, params string[] keys)
         {
-            var result = new Dictionary<string, bool>();
-            foreach (var key in keys) result.Add(key, false);
+            var result = keys.ToDictionary(k => k, k => false);
             var campaignRepo = _serviceProvider.GetRequiredService<ICampaignRepository>();
             var founded = campaignRepo.GetAllCampaigns(result);
             foreach (var foundKey in founded.Keys) result[foundKey] = founded[foundKey];
@@ -136,16 +148,14 @@ public class CampaignManager<TCampaignRuleInput, TCampaignRuleOutput>
 
     public IEnumerable<TCampaignRuleOutput> GetCampaign(TCampaignRuleInput input)
     {
-        if (input == null)
-            throw new ArgumentNullException(nameof(input));
+        ArgumentNullException.ThrowIfNull(input);
 
         return GetCampaign(input, out _);
     }
 
     public IEnumerable<TCampaignRuleOutput> GetCampaign(TCampaignRuleInput input, out List<CampaignRuleSet> ruleSets)
     {
-        if (input == null)
-            throw new ArgumentNullException(nameof(input));
+        ArgumentNullException.ThrowIfNull(input);
 
         try
         {
@@ -195,8 +205,8 @@ public class CampaignManager<TCampaignRuleInput, TCampaignRuleOutput>
             throw new ArgumentException("Product key cannot be null or empty.", nameof(productKey));
         if (string.IsNullOrWhiteSpace(campaignCode))
             throw new ArgumentException("Campaign code cannot be null or empty.", nameof(campaignCode));
-        if (productsInTransaction == null)
-            throw new ArgumentNullException(nameof(productsInTransaction));
+            
+        ArgumentNullException.ThrowIfNull(productsInTransaction);
 
         if (!productsInTransaction.TryGetValue(productKey, out var product))
             return productsInTransaction;
@@ -219,10 +229,9 @@ public class CampaignManager<TCampaignRuleInput, TCampaignRuleOutput>
     {
         if (string.IsNullOrWhiteSpace(productKey))
             throw new ArgumentException("Product key cannot be null or empty.", nameof(productKey));
-        if (productsInTransaction == null)
-            throw new ArgumentNullException(nameof(productsInTransaction));
-        if (input == null)
-            throw new ArgumentNullException(nameof(input));
+            
+        ArgumentNullException.ThrowIfNull(productsInTransaction);
+        ArgumentNullException.ThrowIfNull(input);
 
         var availableCampaigns = new List<AvailableCampaign>();
         var repo = _ruleProvider.ServiceProvider.GetRequiredService<ICampaignRepository>();
@@ -269,8 +278,8 @@ public class CampaignManager<TCampaignRuleInput, TCampaignRuleOutput>
     {
         if (string.IsNullOrWhiteSpace(campaignCode))
             throw new ArgumentException("Campaign code cannot be null or empty.", nameof(campaignCode));
-        if (productsInTransaction == null)
-            throw new ArgumentNullException(nameof(productsInTransaction));
+            
+        ArgumentNullException.ThrowIfNull(productsInTransaction);
 
         foreach (var product in productsInTransaction.Values)
         {

@@ -52,4 +52,9 @@ public class InMemoryCampaignRepository : ICampaignRepository
         _campaigns.Remove(campaign);
         return true;
     }
+
+    public void RecordUsage(int campaignId, string? orderId = null, string? customerId = null)
+    {
+        // No-op for in memory or implement minimal tracking if needed.
+    }
 }

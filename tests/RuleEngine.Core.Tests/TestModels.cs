@@ -42,7 +42,7 @@ public class TestRuleProvider : IRuleProvider<TestResultRuleSet, TestRuleInput, 
         _ruleSets = ruleSets ?? new Dictionary<string, TestResultRuleSet>();
     }
 
-    public Task<IDictionary<string, TestResultRuleSet>> GenerateRuleSetsAsync(DateTime after)
+    public Task<IDictionary<string, TestResultRuleSet>> GenerateRuleSetsAsync(DateTime after, CancellationToken cancellationToken = default)
     {
         var updated = _ruleSets
             .Where(kv => kv.Value.PredicateRule.CompileTime > after || kv.Value.ResultRule.CompileTime > after)
@@ -50,7 +50,7 @@ public class TestRuleProvider : IRuleProvider<TestResultRuleSet, TestRuleInput, 
         return Task.FromResult<IDictionary<string, TestResultRuleSet>>(updated);
     }
 
-    public Task<IDictionary<string, bool>> IsExistsAsync(params string[] keys)
+    public Task<IDictionary<string, bool>> IsExistsAsync(CancellationToken cancellationToken = default, params string[] keys)
     {
         var result = keys.ToDictionary(key => key, key => _ruleSets.ContainsKey(key));
         return Task.FromResult<IDictionary<string, bool>>(result);

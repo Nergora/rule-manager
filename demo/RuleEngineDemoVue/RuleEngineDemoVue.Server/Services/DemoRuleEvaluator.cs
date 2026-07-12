@@ -88,4 +88,15 @@ public sealed class DemoRuleEvaluator : IRuleEvaluator
         _cache.Set(cacheKey, compiled, CacheOptions);
         return compiled;
     }
+
+    public async Task<Dictionary<string, string>> GetGeneratedCodeAsync(RuleDefinition rule)
+    {
+        var compiled = await GetCompiledAsync(rule);
+        
+        return new Dictionary<string, string>
+        {
+            { "Predicate", compiled.Predicate.RuleString },
+            { "Result", compiled.Result.RuleString }
+        };
+    }
 }

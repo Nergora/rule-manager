@@ -1,9 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using RuleEngine.Core.Abstractions;
 using RuleEngine.Core.Models;
-using RuleEngine.Sqlite.Data;
 using RuleEngineDemoVue.Server.Models;
+using RuleEngineDemoVue.Server.Services;
 
 namespace RuleEngineDemoVue.Server.Controllers;
 
@@ -11,20 +10,18 @@ namespace RuleEngineDemoVue.Server.Controllers;
 [Route("api/[controller]")]
 public class RuleController : ControllerBase
 {
-    private readonly RuleDbContext _context;
+
     private readonly IRuleRepository _ruleRepository;
     private readonly IRuleEngine _ruleEngine;
     private readonly IRuleEvaluator _ruleEvaluator;
     private readonly IAuditRepository _auditRepository;
 
     public RuleController(
-        RuleDbContext context,
         IRuleRepository ruleRepository,
         IRuleEngine ruleEngine,
         IRuleEvaluator ruleEvaluator,
         IAuditRepository auditRepository)
     {
-        _context = context;
         _ruleRepository = ruleRepository;
         _ruleEngine = ruleEngine;
         _ruleEvaluator = ruleEvaluator;
@@ -80,15 +77,20 @@ public class RuleController : ControllerBase
     }
 
     [HttpGet("versions/{ruleId}")]
-    public async Task<ActionResult<IEnumerable<RuleVersionEntity>>> GetVersions(string ruleId)
+    public async Task<IActionResult> GetVersions(string ruleId, [FromServices] RuleEngineDemoVue.Server.Data.AppDbContext dbContext)
     {
-        return await _context.RuleVersions.Where(v => v.RuleId == ruleId).ToListAsync();
+        var versions = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync(
+            System.Linq.Queryable.OrderByDescending(
+                System.Linq.Queryable.Where(dbContext.RuleVersions, v => v.RuleId == ruleId),
+                v => v.Version));
+        return Ok(versions);
     }
 
     [HttpGet("parameters/{ruleId}")]
-    public async Task<ActionResult<IEnumerable<RuleParameterEntity>>> GetParameters(string ruleId)
+    public async Task<IActionResult> GetParameters(string ruleId)
     {
-        return await _context.RuleParameters.Where(p => p.RuleId == ruleId).ToListAsync();
+        var rule = await _ruleRepository.GetByIdAsync(ruleId);
+        return Ok(rule?.Parameters ?? new Dictionary<string, object>());
     }
 
     [HttpPost("evaluate/{ruleId}")]
@@ -117,6 +119,22 @@ public class RuleController : ControllerBase
     {
         var history = await _auditRepository.GetExecutionHistoryAsync(ruleId, limit);
         return Ok(history);
+    }
+
+    [HttpGet("{ruleId}/code")]
+    public async Task<ActionResult<Dictionary<string, string>>> GetCode(string ruleId)
+    {
+        var rule = await _ruleRepository.GetActiveVersionAsync(ruleId);
+        if (rule == null)
+            return NotFound();
+
+        if (_ruleEvaluator is DemoRuleEvaluator demoEvaluator)
+        {
+            var code = await demoEvaluator.GetGeneratedCodeAsync(rule);
+            return Ok(code);
+        }
+
+        return BadRequest("The current evaluator does not support exposing generated code.");
     }
 }
 

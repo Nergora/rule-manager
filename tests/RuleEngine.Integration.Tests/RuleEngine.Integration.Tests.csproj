@@ -24,7 +24,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\RuleEngine.Core\RuleEngine.Core.csproj" />
-    <ProjectReference Include="..\..\src\RuleEngine.Sqlite\RuleEngine.Sqlite.csproj" />
   </ItemGroup>
 
 </Project>

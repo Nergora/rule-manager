@@ -1,4 +1,9 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.ExceptionServices;
+using System.Text.Json;
+using System.Threading.Tasks;
 using RuleEngine.Core.Models;
 
 namespace RuleEngine.Core.Rule;
@@ -49,12 +54,9 @@ public class RuleSet<TInput, TOutput> where TInput : RuleInputModel
     /// <param name="priority"></param>
     protected RuleSet(string code, CompiledRule<TInput, bool> predicateRule, CompiledRule<TInput, TOutput> resultRule, int priority)
     {
-        if (code == null)
-            throw new ArgumentNullException(nameof(code));
-        if (predicateRule == null)
-            throw new ArgumentNullException(nameof(predicateRule));
-        if (resultRule == null)
-            throw new ArgumentNullException(nameof(resultRule));
+        ArgumentNullException.ThrowIfNull(code);
+        ArgumentNullException.ThrowIfNull(predicateRule);
+        ArgumentNullException.ThrowIfNull(resultRule);
 
         Code = code;
         PredicateRule = predicateRule;
@@ -75,8 +77,18 @@ public class RuleSet<TInput, TOutput> where TInput : RuleInputModel
         }
         catch (Exception e)
         {
-            ExceptionDispatchInfo.Capture(new RuleRuntimeException(e, PredicateRule.RuleString, System.Text.Json.JsonSerializer.Serialize(input), Code) { Priority = Priority }).Throw();
-            throw;
+            string serializedInput = "Error serializing input";
+            try
+            {
+                serializedInput = JsonSerializer.Serialize(input);
+            }
+            catch
+            {
+                // Ignore serialization error so we don't mask the original exception
+            }
+            
+            ExceptionDispatchInfo.Capture(new RuleRuntimeException(e, PredicateRule.RuleString, serializedInput, Code) { Priority = Priority }).Throw();
+            return false; // Actually unreachable due to Throw() above, but compiler needs a return path
         }
     }
 
@@ -93,8 +105,18 @@ public class RuleSet<TInput, TOutput> where TInput : RuleInputModel
         }
         catch (Exception e)
         {
-            ExceptionDispatchInfo.Capture(new RuleRuntimeException(e, ResultRule.RuleString, System.Text.Json.JsonSerializer.Serialize(input), Code) { Priority = Priority }).Throw();
-            throw;
+            string serializedInput = "Error serializing input";
+            try
+            {
+                serializedInput = JsonSerializer.Serialize(input);
+            }
+            catch
+            {
+                // Ignore serialization error
+            }
+
+            ExceptionDispatchInfo.Capture(new RuleRuntimeException(e, ResultRule.RuleString, serializedInput, Code) { Priority = Priority }).Throw();
+            return default!;
         }
     }
 
@@ -155,6 +177,7 @@ public class MultiResultRuleSet<TInput, TOutput> : RuleSet<TInput, TOutput> wher
     /// Executes the result rule and selects from available results.
     /// </summary>
     /// <param name="input"></param>
+    /// <param name="availableResults"></param>
     /// <returns></returns>
     public virtual TOutput GetResult(TInput input, IEnumerable<TOutput> availableResults)
     {
@@ -165,8 +188,18 @@ public class MultiResultRuleSet<TInput, TOutput> : RuleSet<TInput, TOutput> wher
         }
         catch (Exception e)
         {
-            ExceptionDispatchInfo.Capture(new RuleRuntimeException(e, ResultRule.RuleString, System.Text.Json.JsonSerializer.Serialize(input), Code) { Priority = Priority }).Throw();
-            throw;
+            string serializedInput = "Error serializing input";
+            try
+            {
+                serializedInput = JsonSerializer.Serialize(input);
+            }
+            catch
+            {
+                // Ignore serialization error
+            }
+
+            ExceptionDispatchInfo.Capture(new RuleRuntimeException(e, ResultRule.RuleString, serializedInput, Code) { Priority = Priority }).Throw();
+            return default!;
         }
     }
 
