@@ -3,7 +3,6 @@
 [![.NET](https://img.shields.io/badge/.NET-8.0%20%7C%209.0%20%7C%2010.0-512BD4)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![NuGet](https://img.shields.io/nuget/v/Nergora.RuleEngine.Core.svg)](https://www.nuget.org/packages/Nergora.RuleEngine.Core/)
-[![NuGet](https://img.shields.io/nuget/v/Nergora.RuleEngine.Sqlite.svg)](https://www.nuget.org/packages/Nergora.RuleEngine.Sqlite/)
 [![NuGet](https://img.shields.io/nuget/v/Nergora.CampaignEngine.Core.svg)](https://www.nuget.org/packages/Nergora.CampaignEngine.Core/)
 
 Modern, extensible, and high-performance rule engine and campaign management system. Create dynamic business rules with Roslyn-based C# expression evaluation, persist with SQLite or custom repositories, and build campaign systems.
@@ -35,15 +34,15 @@ Modern rule engine with Roslyn-based C# expression evaluation.
 - ✅ RuleManager/IRuleProvider orchestration flow
 - ✅ DEBUG_RULES PDB debugging support
 
-### RuleEngine.Sqlite
-SQLite-based persistence layer.
+### Demo Application (React + .NET 10)
+A comprehensive e-commerce simulator and rule management dashboard.
 
 **Features:**
-- ✅ Entity Framework Core integration
-- ✅ Rule versioning and rollback
-- ✅ Execution audit logging
-- ✅ Migration and seeding support
-- ✅ CRUD operations
+- ✅ Visual Rule Builder
+- ✅ Rule versioning and history tracking
+- ✅ Execution audit logs
+- ✅ Campaign simulator (add products, apply discounts/gifts)
+- ✅ Code generation preview
 
 ### CampaignEngine.Core ⭐ NEW
 Campaign management system built on top of RuleEngine.Core.
@@ -179,59 +178,6 @@ foreach (var result in campaigns)
 }
 ```
 
-### SQLite Persistence Usage
-
-```csharp
-using RuleEngine.Sqlite.Data;
-using Microsoft.EntityFrameworkCore;
-
-// 1. Configure DbContext
-services.AddDbContext<RuleDbContext>(options =>
-    options.UseSqlite("Data Source=ruleengine.db"));
-
-// 2. Use repositories
-public class RuleService
-{
-    private readonly RuleDbContext _context;
-    
-    public async Task<RuleEntity> CreateRuleAsync(string name, string predicate, string result)
-    {
-        var rule = new RuleEntity
-        {
-            Name = name,
-            IsActive = true,
-            CreateDate = DateTime.UtcNow
-        };
-        
-        _context.Rules.Add(rule);
-        await _context.SaveChangesAsync();
-        
-        var version = new RuleVersionEntity
-        {
-            RuleId = rule.Id,
-            Version = 1,
-            Predicate = predicate,
-            Result = result,
-            IsActive = true,
-            CreateDate = DateTime.UtcNow
-        };
-        
-        _context.RuleVersions.Add(version);
-        await _context.SaveChangesAsync();
-        
-        return rule;
-    }
-    
-    public async Task<List<RuleEntity>> GetActiveRulesAsync()
-    {
-        return await _context.Rules
-            .Include(r => r.Versions)
-            .Where(r => r.IsActive)
-            .ToListAsync();
-    }
-}
-```
-
 ## 📦 Requirements
 
 - .NET 8.0, .NET 9.0, or .NET 10.0
@@ -249,11 +195,7 @@ RuleEngine/
 │   │   ├── Rule/                 # Rule management
 │   │   ├── Models/               # Data models
 │   │   ├── Abstractions/         # Interfaces
-│   │   └── Services/             # Services
-│   │
-│   ├── RuleEngine.Sqlite/        # SQLite persistence
-│   │   ├── Data/                 # DbContext & Entities
-│   │   └── Repositories/         # Repository implementations
+│   │   └── Extensions/           # DI extensions
 │   │
 │   └── CampaignEngine.Core/      # Campaign engine
 │       ├── Models/               # Campaign models
