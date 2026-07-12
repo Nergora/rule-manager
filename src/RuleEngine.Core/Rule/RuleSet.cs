@@ -29,7 +29,7 @@ public class RuleSet<TInput, TOutput> where TInput : RuleInputModel
     /// <summary>
     /// Compiled result rule.
     /// </summary>
-    public CompiledRule<TInput, TOutput> ResultRule { get; set; }
+    public CompiledRule<TInput, TOutput> ResultRule { get; internal set; }
 
     /// <summary>
     /// Priority.
@@ -87,7 +87,7 @@ public class RuleSet<TInput, TOutput> where TInput : RuleInputModel
                 // Ignore serialization error so we don't mask the original exception
             }
             
-            ExceptionDispatchInfo.Capture(new RuleRuntimeException(e, PredicateRule.RuleString, serializedInput, Code) { Priority = Priority }).Throw();
+            ExceptionDispatchInfo.Capture(new RuleRuntimeException(e, PredicateRule.RuleString, serializedInput, Code, Priority)).Throw();
             return false; // Actually unreachable due to Throw() above, but compiler needs a return path
         }
     }
@@ -115,7 +115,7 @@ public class RuleSet<TInput, TOutput> where TInput : RuleInputModel
                 // Ignore serialization error
             }
 
-            ExceptionDispatchInfo.Capture(new RuleRuntimeException(e, ResultRule.RuleString, serializedInput, Code) { Priority = Priority }).Throw();
+            ExceptionDispatchInfo.Capture(new RuleRuntimeException(e, ResultRule.RuleString, serializedInput, Code, Priority)).Throw();
             return default!;
         }
     }
@@ -198,7 +198,7 @@ public class MultiResultRuleSet<TInput, TOutput> : RuleSet<TInput, TOutput> wher
                 // Ignore serialization error
             }
 
-            ExceptionDispatchInfo.Capture(new RuleRuntimeException(e, ResultRule.RuleString, serializedInput, Code) { Priority = Priority }).Throw();
+            ExceptionDispatchInfo.Capture(new RuleRuntimeException(e, ResultRule.RuleString, serializedInput, Code, Priority)).Throw();
             return default!;
         }
     }

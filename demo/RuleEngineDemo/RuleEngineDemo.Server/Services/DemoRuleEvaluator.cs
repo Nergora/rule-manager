@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Caching.Memory;
-using RuleEngine.Core.Abstractions;
 using RuleEngine.Core.Models;
 using RuleEngine.Core.Rule;
 using RuleEngineDemo.Server.Models;

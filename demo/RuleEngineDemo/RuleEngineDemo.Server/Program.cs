@@ -6,7 +6,6 @@ using CampaignEngine.Core.Abstractions;
 using CampaignEngine.Core.Demo;
 using RuleEngine.Core.Abstractions;
 using RuleEngine.Core.Extensions;
-using RuleEngine.Core.Managers;
 using RuleEngine.Core.Models;
 using RuleEngine.Core.Rule.DesignTime;
 using RuleEngine.Core.Rule.DesignTime.Parameters;
@@ -32,7 +31,6 @@ builder.Services.AddSingleton<IAuditRepository, InMemoryAuditRepository>();
 builder.Services.AddRuleEngineDesignTime();
 builder.Services.AddSingleton<IRuleEvaluator, DemoRuleEvaluator>();
 builder.Services.AddScoped<IRuleEngine, DemoRuleEngine>();
-builder.Services.AddScoped<IRuleManager, RuleManager>();
 
 builder.Services.AddCampaignEngine();
 builder.Services.AddScoped<ICampaignRepository, EfCampaignRepository>();

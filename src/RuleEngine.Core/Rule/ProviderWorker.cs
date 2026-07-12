@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using Microsoft.Extensions.Logging;
 using RuleEngine.Core.Models;
 using RuleEngine.Core.Extensions;
 
@@ -13,35 +14,14 @@ public abstract class ProviderWorker
 
     public abstract Task ProcessAsync();
 
-    public void WaitInitialization()
-    {
-        while (_initialized == 0)
-        {
-            Thread.Sleep(10);
-        }
-    }
-
-    private static readonly SemaphoreSlim _waitSemaphore = new SemaphoreSlim(1);
-
-    public void WaitInitializationWithSemaphore()
-    {
-        _waitSemaphore.Wait();
-        try
-        {
-            while (_initialized == 0)
-            {
-                Thread.Sleep(10);
-            }
-        }
-        finally
-        {
-            _waitSemaphore.Release();
-        }
-    }
+    /// <summary>
+    /// Blocks the calling thread until this worker has completed its first load.
+    /// </summary>
+    public abstract void WaitInitialization();
 }
 
 /// <summary>
-/// Generic class for provider caching and background processing.
+/// Generic provider worker: caches compiled rule sets and refreshes them in the background.
 /// </summary>
 /// <typeparam name="TRuleSet"></typeparam>
 /// <typeparam name="TInput"></typeparam>
@@ -51,15 +31,18 @@ public class ProviderWorker<TRuleSet, TInput, TOutput> : ProviderWorker
     where TInput : RuleInputModel
 {
     private new int _initialized;
+    private readonly TaskCompletionSource<bool> _initTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
     public bool Initialized => _initialized > 0;
 
     private readonly IRuleProvider<TRuleSet, TInput, TOutput> _provider;
-    public readonly ConcurrentDictionary<string, TRuleSet> RuleSets = new ConcurrentDictionary<string, TRuleSet>();
+    private readonly ILogger? _logger;
+    public readonly ConcurrentDictionary<string, TRuleSet> RuleSets = new();
 
-    public ProviderWorker(IRuleProvider<TRuleSet, TInput, TOutput> provider)
+    public ProviderWorker(IRuleProvider<TRuleSet, TInput, TOutput> provider, ILogger? logger = null)
     {
         _provider = provider;
+        _logger = logger;
         _providerTypeName = provider.GetType().GetFriendlyName();
     }
 
@@ -69,18 +52,14 @@ public class ProviderWorker<TRuleSet, TInput, TOutput> : ProviderWorker
     {
         try
         {
-            var lastCompileTime = RuleSets.Count > 0 ?
-                RuleSets.Values.Max(
-                    rs => rs.PredicateRule == null ? rs.ResultRule.CompileTime :
-                        (
-                            rs.ResultRule == null ? rs.PredicateRule.CompileTime :
-                                (
-                                    rs.PredicateRule.CompileTime > rs.ResultRule.CompileTime
-                                        ? rs.PredicateRule.CompileTime
-                                        : rs.ResultRule.CompileTime
-                                )
-                        )
-                ) : default(DateTime);
+            var lastCompileTime = RuleSets.Count > 0
+                ? RuleSets.Values.Max(rs =>
+                    rs.PredicateRule == null ? rs.ResultRule.CompileTime :
+                    rs.ResultRule == null ? rs.PredicateRule.CompileTime :
+                    rs.PredicateRule.CompileTime > rs.ResultRule.CompileTime
+                        ? rs.PredicateRule.CompileTime
+                        : rs.ResultRule.CompileTime)
+                : default;
 
             // Remove deleted rule sets.
             var isExistDic = await _provider.IsExistsAsync(default, RuleSets.Keys.ToArray());
@@ -98,42 +77,53 @@ public class ProviderWorker<TRuleSet, TInput, TOutput> : ProviderWorker
         }
         catch (Exception e)
         {
-            // Log exception
-            Console.WriteLine($"Error in ProviderWorker.ProcessAsync: {e.Message}");
+            _logger?.LogError(e, "Error in ProviderWorker.ProcessAsync for provider {ProviderType}: {Message}",
+                _providerTypeName, e.Message);
         }
         finally
         {
-            Interlocked.CompareExchange(ref _initialized, 1, 0);
+            if (Interlocked.CompareExchange(ref _initialized, 1, 0) == 0)
+            {
+                _initTcs.TrySetResult(true);
+            }
         }
     }
 
-    private static readonly SemaphoreSlim _waitSemaphore = new SemaphoreSlim(1);
-
-    public new void WaitInitialization()
+    /// <summary>
+    /// Blocks until the first <see cref="ProcessAsync"/> call completes, or throws <see cref="TimeoutException"/>
+    /// after 25.5 seconds.
+    /// </summary>
+    public override void WaitInitialization()
     {
         if (Initialized)
             return;
 
-        _waitSemaphore.Wait();
+        if (!_initTcs.Task.Wait(TimeSpan.FromSeconds(25.5)))
+        {
+            throw new TimeoutException(
+                $"The rule sets of the {_providerTypeName} provider haven't initialized within the timeout period.");
+        }
+    }
+
+    /// <summary>
+    /// Awaitable version of <see cref="WaitInitialization"/>.
+    /// </summary>
+    public async Task WaitInitializationAsync(CancellationToken cancellationToken = default)
+    {
+        if (Initialized)
+            return;
+
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        cts.CancelAfter(TimeSpan.FromSeconds(25.5));
+
         try
         {
-            var cancellationTokenSource = new CancellationTokenSource();
-            var initializeTask = Task.Run(async () =>
-            {
-                while (!Initialized && !cancellationTokenSource.IsCancellationRequested)
-                {
-                    await Task.Delay(50, cancellationTokenSource.Token);
-                }
-            }, cancellationTokenSource.Token);
-            if (!initializeTask.Wait(25500, cancellationTokenSource.Token))
-            {
-                cancellationTokenSource.Cancel();
-                throw new TimeoutException($"The rule sets of the {_provider.GetType().GetFriendlyName()} haven't initialized yet.");
-            }
+            await _initTcs.Task.WaitAsync(cts.Token);
         }
-        finally
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
-            _waitSemaphore.Release();
+            throw new TimeoutException(
+                $"The rule sets of the {_providerTypeName} provider haven't initialized within the timeout period.");
         }
     }
 
@@ -145,23 +135,24 @@ public class ProviderWorker<TRuleSet, TInput, TOutput> : ProviderWorker
             .Select(rs => rs.GetResult(input));
     }
 
-    public async Task<IEnumerable<TOutput>> ExecuteAsync(TInput input)
-    {
-        return await Task.Run(() => Execute(input));
-    }
+    /// <summary>
+    /// Executes matching rule sets and returns their results.
+    /// Note: Rule execution is CPU-bound and runs synchronously; the Task wrapper
+    /// allows callers to use await syntax without blocking the caller's synchronization context.
+    /// </summary>
+    public Task<IEnumerable<TOutput>> ExecuteAsync(TInput input)
+        => Task.FromResult(Execute(input));
 
     public IEnumerable<TOutput> Execute(TInput input, IEnumerable<TOutput> availableResults)
     {
         return RuleSets.Values
             .Where(rs => rs.Predicate(input))
             .OrderBy(rs => rs.Priority)
-            .Select(rs => rs is MultiResultRuleSet<TInput, TOutput> multiResult ? 
-                multiResult.GetResult(input, availableResults) : 
-                rs.GetResult(input));
+            .Select(rs => rs is MultiResultRuleSet<TInput, TOutput> multiResult
+                ? multiResult.GetResult(input, availableResults)
+                : rs.GetResult(input));
     }
 
-    public async Task<IEnumerable<TOutput>> ExecuteAsync(TInput input, IEnumerable<TOutput> availableResults)
-    {
-        return await Task.Run(() => Execute(input, availableResults));
-    }
+    public Task<IEnumerable<TOutput>> ExecuteAsync(TInput input, IEnumerable<TOutput> availableResults)
+        => Task.FromResult(Execute(input, availableResults));
 }
